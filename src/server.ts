@@ -103,16 +103,26 @@ app.get('/api/docs', (req: Request, res: Response) => {
 
 // Middleware to set permissive CSP for Swagger UI specifically
 app.use('/docs', (req: Request, res: Response, next: NextFunction) => {
+  // Set very permissive CSP for Swagger UI to work properly
   res.setHeader('Content-Security-Policy', 
-    "default-src 'self'; " +
-    "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://unpkg.com; " +
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; " +
-    "font-src 'self' https://fonts.gstatic.com data:; " +
-    "img-src 'self' data: https: blob:; " +
-    "connect-src 'self' https: wss: ws:; " +
-    "frame-src 'none'; " +
+    "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https:; " +
+    "script-src 'self' 'unsafe-eval' 'unsafe-inline' data: blob: https:; " +
+    "style-src 'self' 'unsafe-inline' data: blob: https:; " +
+    "font-src 'self' data: blob: https:; " +
+    "img-src 'self' data: blob: https:; " +
+    "connect-src 'self' data: blob: https: wss: ws:; " +
+    "media-src 'self' data: blob: https:; " +
+    "frame-src 'self' data: blob: https:; " +
     "object-src 'none';"
   )
+  
+  // Additional headers for Swagger UI compatibility
+  res.setHeader('X-Content-Type-Options', 'nosniff')
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN')
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept')
+  
   next()
 })
 
@@ -123,16 +133,47 @@ app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
     .swagger-ui .topbar { display: none; }
     .swagger-ui .info .title { color: #2d8659; }
     .swagger-ui .scheme-container { background: #f8f9fa; padding: 15px; border-radius: 5px; }
+    .swagger-ui .opblock { cursor: pointer !important; }
+    .swagger-ui .opblock-summary { pointer-events: auto !important; }
   `,
   customSiteTitle: "WildGuard Conservation API Documentation",
   swaggerOptions: {
     persistAuthorization: true,
     displayRequestDuration: true,
-    docExpansion: 'list',
+    docExpansion: 'list', // Ensure sections can be expanded
     filter: true,
     showExtensions: true,
     tryItOutEnabled: true,
+    supportedSubmitMethods: ['get', 'post', 'put', 'delete', 'patch'],
+    validatorUrl: null, // Disable validator to prevent external calls
+    layout: "BaseLayout",
+    deepLinking: true,
+    showCommonExtensions: true,
+    defaultModelsExpandDepth: 1,
+    defaultModelExpandDepth: 1
   },
+  customJs: [
+    `
+    // Ensure all operations are expandable
+    window.addEventListener('load', function() {
+      setTimeout(function() {
+        // Force enable all expand/collapse functionality
+        const operations = document.querySelectorAll('.opblock');
+        operations.forEach(function(op) {
+          op.style.pointerEvents = 'auto';
+          op.style.cursor = 'pointer';
+        });
+        
+        // Ensure click handlers work
+        const summaries = document.querySelectorAll('.opblock-summary');
+        summaries.forEach(function(summary) {
+          summary.style.pointerEvents = 'auto';
+          summary.style.cursor = 'pointer';
+        });
+      }, 1000);
+    });
+    `
+  ]
 }))
 
 // OpenAPI spec endpoint

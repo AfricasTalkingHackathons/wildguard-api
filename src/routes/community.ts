@@ -257,12 +257,26 @@ router.post('/sms', async (req: Request, res: Response) => {
  *         description: Voice processing failed
  */
 // Voice endpoint for handling voice reports and IVR
-router.post('/voice', async (req: Request, res: Response) => {
+router.post('/voice', async (req: Request, res: Response): Promise<void> => {
   try {
     const callbackData = req.body
     console.log('Voice callback received:', callbackData)
 
-    // Use enhanced voice callback handler
+    // Handle different voice callback types
+    if (callbackData.callSessionState === 'Completed' || callbackData.status === 'Aborted') {
+      // This is a call completion callback
+      console.log(`Call ${callbackData.status || callbackData.callSessionState} - Duration: ${callbackData.durationInSeconds || 0}s`)
+      
+      // Return success response for callback acknowledgment
+      res.json({
+        success: true,
+        message: 'Voice callback processed',
+        sessionId: callbackData.sessionId
+      })
+      return
+    }
+
+    // Use enhanced voice callback handler for active calls
     const xmlResponse = await AfricasTalkingService.handleVoiceCallback(callbackData)
     
     // Process voice recordings if available
@@ -286,6 +300,7 @@ router.post('/voice', async (req: Request, res: Response) => {
 
     res.set('Content-Type', 'text/xml')
     res.send(xmlResponse)
+    return // Add explicit return
     
   } catch (error) {
     console.error('Voice handling error:', error)
