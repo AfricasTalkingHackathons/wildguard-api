@@ -11,26 +11,55 @@ router.post('/ussd', async (req: Request, res: Response) => {
   try {
     const { sessionId, serviceCode, phoneNumber, text } = req.body
 
-    // Build USSD response menu
+    console.log(`USSD Session: ${sessionId}, Phone: ${phoneNumber}, Text: "${text}"`)
+
+    // Build comprehensive USSD response menu
     const response = AfricasTalkingService.buildUSSDMenu(sessionId, serviceCode, phoneNumber, text)
     
-    // Process completed report if text ends with submission
-    if (text && text.includes('*5')) {
-      // Extract report details from USSD flow
-      const parts = text.split('*')
-      
-      if (parts.length >= 3) {
-        const reportType = mapUSSDToReportType(parts[0], parts[1])
-        const description = `USSD Report: ${parts.slice(0, 3).join(' - ')}`
+    // Process completed reports (when session ends with submission)
+    if (text && (text.includes('*5') || text.split('*').length >= 4)) {
+      try {
+        // Extract report details from USSD flow
+        const parts = text.split('*')
         
-        // Create the report
-        await ReportProcessingService.createReport({
-          phoneNumber,
-          type: reportType,
-          description,
-          priority: reportType === 'poaching' || reportType === 'suspicious_activity' ? 'urgent' : 'medium',
-          reportMethod: 'ussd',
-        })
+        if (parts.length >= 4) {
+          let reportType: ReportType = 'suspicious_activity'
+          let priority: ReportPriority = 'medium'
+          let description = 'USSD Report'
+          
+          // Map first menu selection to report types
+          if (parts[0] === '1') {
+            // Emergency reports
+            const emergencyTypes = ['poaching', 'injury', 'fire', 'suspicious_activity'] as const
+            reportType = emergencyTypes[parseInt(parts[1]) - 1] || 'suspicious_activity'
+            priority = 'urgent'
+            description = `Emergency: ${reportType} via USSD`
+          } else if (parts[0] === '2') {
+            // Wildlife sightings
+            reportType = 'wildlife_sighting'
+            priority = 'medium'
+            description = `Wildlife sighting via USSD - Category: ${parts[1]}, Count: ${parts[2]}`
+          } else if (parts[0] === '3') {
+            // Suspicious activity
+            reportType = 'suspicious_activity'
+            priority = parts[2] === '1' || parts[2] === '2' ? 'urgent' : 'high'
+            description = `Suspicious activity via USSD - Type: ${parts[1]}, Timing: ${parts[2]}`
+          }
+          
+          // Create the report
+          const reportId = await ReportProcessingService.createReport({
+            phoneNumber,
+            type: reportType,
+            description,
+            priority,
+            reportMethod: 'ussd',
+            isAnonymous: false
+          })
+          
+          console.log(`USSD Report created: ${reportId} by ${phoneNumber}`)
+        }
+      } catch (reportError) {
+        console.error('Error processing USSD report:', reportError)
       }
     }
 
@@ -75,33 +104,51 @@ router.post('/sms', async (req: Request, res: Response) => {
   }
 })
 
-// Voice endpoint for handling voice reports
+// Voice endpoint for handling voice reports and IVR
 router.post('/voice', async (req: Request, res: Response) => {
   try {
-    const { sessionId, isActive, callerNumber } = req.body
+    const callbackData = req.body
+    console.log('Voice callback received:', callbackData)
 
-    // Simple voice response for demo
-    // In production, you'd implement speech-to-text and voice menus
-    const response = `<?xml version="1.0" encoding="UTF-8"?>
-    <Response>
-      <Say voice="woman">
-        Welcome to WildGuard Wildlife Protection. 
-        This is an emergency conservation hotline.
-        Please hold while we connect you to the nearest ranger station.
-      </Say>
-      <Dial phoneNumbers="+254700000000" record="true" />
-    </Response>`
+    // Use enhanced voice callback handler
+    const xmlResponse = await AfricasTalkingService.handleVoiceCallback(callbackData)
+    
+    // Process voice recordings if available
+    if (callbackData.recordingUrl) {
+      try {
+        // Create voice report from recording
+        await ReportProcessingService.createReport({
+          phoneNumber: callbackData.callerNumber,
+          type: 'suspicious_activity', // Default type for voice reports
+          description: `Voice report recorded. Audio URL: ${callbackData.recordingUrl}`,
+          priority: callbackData.dtmfDigits === '1' ? 'urgent' : 'medium',
+          reportMethod: 'voice',
+          mediaUrls: [callbackData.recordingUrl]
+        })
+        
+        console.log(`Voice report created from ${callbackData.callerNumber}`)
+      } catch (reportError) {
+        console.error('Error creating voice report:', reportError)
+      }
+    }
 
     res.set('Content-Type', 'text/xml')
-    res.send(response)
+    res.send(xmlResponse)
     
   } catch (error) {
     console.error('Voice handling error:', error)
-    res.status(500).json({ error: 'Voice processing failed' })
+    
+    // Fallback XML response
+    const errorResponse = `<?xml version="1.0" encoding="UTF-8"?>
+    <Response>
+      <Say voice="woman">Sorry, there was a technical error. Please try calling again later.</Say>
+      <Hangup/>
+    </Response>`
+    
+    res.set('Content-Type', 'text/xml')
+    res.send(errorResponse)
   }
-})
-
-// Mobile app endpoint for digital reports
+})// Mobile app endpoint for digital reports
 router.post('/report', async (req: Request, res: Response) => {
   try {
     const {
@@ -179,6 +226,44 @@ router.get('/profile/:phoneNumber', async (req: Request, res: Response) => {
   } catch (error) {
     console.error('Profile retrieval error:', error)
     res.status(500).json({ error: 'Failed to get profile' })
+  }
+})
+
+// Airtime callback endpoint for transaction status updates
+router.post('/airtime-callback', async (req: Request, res: Response) => {
+  try {
+    const { phoneNumber, amount, status, transactionId, discount, requestId } = req.body
+    
+    console.log('Airtime callback received:', {
+      phoneNumber,
+      amount, 
+      status,
+      transactionId,
+      discount,
+      requestId
+    })
+
+    // Update reward record with callback information
+    // In production, you'd update the database record matching the transactionId
+    if (transactionId) {
+      console.log(`Airtime transaction ${transactionId} status: ${status}`)
+      
+      // Send confirmation SMS if successful
+      if (status === 'Success') {
+        await AfricasTalkingService.sendSMS({
+          to: [phoneNumber],
+          message: `✅ Airtime Delivered!\n\nAmount: ${amount}\nTransaction: ${transactionId}\n\nThank you for protecting wildlife!\n- WildGuard`
+        })
+      } else if (status === 'Failed') {
+        console.error(`Airtime delivery failed for ${phoneNumber}: ${amount}`)
+      }
+    }
+
+    res.json({ success: true, message: 'Callback processed' })
+    
+  } catch (error) {
+    console.error('Airtime callback error:', error)
+    res.status(500).json({ error: 'Callback processing failed' })
   }
 })
 
