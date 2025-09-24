@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: wildguard-api
+    env: docker
+    plan: starter
+    branch: main
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        sync: false  # Set manually in Render dashboard
+      - key: AT_API_KEY
+        sync: false  # Set manually in Render dashboard
+      - key: AT_USERNAME
+        sync: false  # Set manually in Render dashboard
+      - key: JWT_SECRET
+        sync: false  # Set manually in Render dashboard
+    autoDeploy: true
