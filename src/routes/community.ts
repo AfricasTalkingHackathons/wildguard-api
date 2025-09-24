@@ -106,6 +106,43 @@ router.post('/ussd', async (req: Request, res: Response) => {
           })
           
           console.log(`USSD Report created: ${reportId} by ${phoneNumber}`)
+          
+          // Award airtime based on report type and urgency
+          const airtimeReward = calculateAirtimeReward(reportType, priority)
+          
+          if (airtimeReward > 0) {
+            try {
+              // Send airtime reward
+              await AfricasTalkingService.sendAirtime({
+                phoneNumber: phoneNumber,
+                amount: airtimeReward,
+                currencyCode: 'KES'
+              })
+              
+              // Send reward notification SMS
+              await AfricasTalkingService.sendSMS({
+                to: [phoneNumber],
+                message: `🎉 Report Submitted Successfully!
+
+Report ID: ${reportId.substring(0, 8)}
+Type: ${reportType}
+Airtime Reward: ${airtimeReward} KES
+
+Thank you for protecting wildlife!
+- WildGuard Team`
+              })
+              
+              console.log(`Airtime reward sent: ${airtimeReward} KES to ${phoneNumber}`)
+            } catch (airtimeError) {
+              console.error('Error sending airtime reward:', airtimeError)
+              
+              // Still send confirmation SMS even if airtime fails
+              await AfricasTalkingService.sendSMS({
+                to: [phoneNumber],
+                message: `Report submitted successfully! ID: ${reportId.substring(0, 8)}. Airtime reward (${airtimeReward} KES) will be processed shortly.`
+              })
+            }
+          }
         }
       } catch (reportError) {
         console.error('Error processing USSD report:', reportError)
@@ -435,9 +472,29 @@ router.post('/report', async (req: Request, res: Response) => {
       isAnonymous,
     })
 
+    // Award airtime for mobile app reports too
+    if (!isAnonymous) {
+      const airtimeReward = calculateAirtimeReward(type as ReportType, priority as ReportPriority)
+      
+      if (airtimeReward > 0) {
+        try {
+          await AfricasTalkingService.sendAirtime({
+            phoneNumber: phoneNumber,
+            amount: airtimeReward,
+            currencyCode: 'KES'
+          })
+          
+          console.log(`Mobile app airtime reward: ${airtimeReward} KES to ${phoneNumber}`)
+        } catch (airtimeError) {
+          console.error('Mobile app airtime reward failed:', airtimeError)
+        }
+      }
+    }
+
     return res.json({
       success: true,
       reportId,
+      airtimeReward: !isAnonymous ? calculateAirtimeReward(type as ReportType, priority as ReportPriority) : 0,
       message: 'Report submitted successfully. Rangers have been notified.',
     })
     
@@ -694,5 +751,30 @@ function parseSMSReport(phoneNumber: string, text: string) {
 type ReportType = 'poaching' | 'illegal_logging' | 'wildlife_sighting' | 'suspicious_activity' | 'injury' | 'fence_breach' | 'fire'
 type ReportPriority = 'low' | 'medium' | 'high' | 'urgent'
 type ReportMethod = 'sms' | 'ussd' | 'voice' | 'app'
+
+// Calculate airtime reward based on report type and priority
+function calculateAirtimeReward(reportType: ReportType, priority: ReportPriority): number {
+  const baseRewards = {
+    'poaching': 20,           // High reward for poaching reports
+    'fire': 15,              // High reward for fire reports
+    'injury': 12,            // Medium-high for injured animals
+    'suspicious_activity': 8, // Medium reward
+    'illegal_logging': 10,    // Medium reward
+    'fence_breach': 6,        // Lower reward
+    'wildlife_sighting': 5    // Base reward for sightings
+  }
+  
+  const priorityMultipliers = {
+    'urgent': 1.5,   // 50% bonus for urgent reports
+    'high': 1.2,     // 20% bonus for high priority
+    'medium': 1.0,   // No bonus for medium
+    'low': 0.8       // 20% less for low priority
+  }
+  
+  const baseReward = baseRewards[reportType] || 5
+  const multiplier = priorityMultipliers[priority] || 1.0
+  
+  return Math.round(baseReward * multiplier)
+}
 
 export default router

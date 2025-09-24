@@ -336,40 +336,46 @@ Select activity type:
 0. Back to Main Menu`
 
       } else if (text === '4') {
-        // User Profile - would query database in production
-        return `END Your WildGuard Profile
+        // User Profile - Check my profile with options
+        ussdSessions.set(sessionId, { step: 'profile_menu', data: {} })
+        return `CON Your WildGuard Profile
 Trust Score: 87/100
 Total Reports: 23
-Verified Reports: 19
-Pending Reports: 2
-Monthly Ranking: #5
-Conservation Impact: High
-Keep protecting wildlife!`
+Verified: 19 | Pending: 2
+Monthly Rank: #5
+
+1. View Report History
+2. Update Contact Info
+3. Trust Score Details
+4. Conservation Impact
+0. Back to Main Menu`
 
       } else if (text === '5') {
-        // Reward Balance - would query database
-        return `END WildGuard Rewards
+        // Reward Balance with actions
+        ussdSessions.set(sessionId, { step: 'rewards_menu', data: {} })
+        return `CON WildGuard Rewards
 Current Balance: 45 KES
-This Month Earned: 25 KES
+This Month: 25 KES
 Total Lifetime: 180 KES
-Pending Verification: 2 reports
-Thank you for being a hero!`
+Pending: 10 KES (2 reports)
+
+1. Request Airtime Now
+2. View Earning History
+3. How to Earn More
+0. Back to Main Menu`
 
       } else if (text === '6') {
-        // Conservation Tips
-        const tips = [
-          "Never approach wild animals directly",
-          "Take photos from a safe distance", 
-          "Report poaching immediately",
-          "Night chainsaw sounds = illegal logging",
-          "Always share your exact location"
-        ]
-        const randomTip = tips[Math.floor(Math.random() * tips.length)]
-        
-        return `END Conservation Tip
-${randomTip}
-Stay safe and keep protecting wildlife!
-- WildGuard Team`
+        // Conservation Tips with categories
+        ussdSessions.set(sessionId, { step: 'tips_menu', data: {} })
+        return `CON Conservation Tips
+Choose category:
+
+1. Wildlife Safety
+2. Reporting Best Practices
+3. Emergency Procedures
+4. Animal Behavior
+5. Random Daily Tip
+0. Back to Main Menu`
 
       } else if (text.startsWith('1*')) {
         // Emergency flow
@@ -382,6 +388,30 @@ Stay safe and keep protecting wildlife!
       } else if (text.startsWith('3*')) {
         // Suspicious activity flow
         return this.handleSuspiciousFlow(sessionId, text, session)
+        
+      } else if (text.startsWith('4*')) {
+        // Profile menu flow
+        return this.handleProfileFlow(sessionId, text, session)
+        
+      } else if (text.startsWith('5*')) {
+        // Rewards menu flow
+        return this.handleRewardsFlow(sessionId, text, session, phoneNumber)
+        
+      } else if (text.startsWith('6*')) {
+        // Tips menu flow
+        return this.handleTipsFlow(sessionId, text, session)
+        
+      } else if (text === '0' || text.endsWith('*0')) {
+        // Back to main menu
+        ussdSessions.set(sessionId, { step: 'main', data: {} })
+        return `CON Welcome to WildGuard
+Wildlife Protection Platform
+1. Report Wildlife Emergency
+2. Report Wildlife Sighting
+3. Report Suspicious Activity
+4. Check My Profile
+5. View Reward Balance
+6. Get Conservation Tips`
         
       } else {
         // Invalid input
@@ -650,6 +680,294 @@ Thank you for your vigilance!`
     }
     
     return `END Session error. Please try again.`
+  }
+
+  // Handle profile menu flow
+  private static handleProfileFlow(sessionId: string, text: string, session: USSDMenuState): string {
+    const parts = text.split('*')
+    
+    if (parts.length === 2) {
+      const option = parts[1]
+      
+      switch (option) {
+        case '1':
+          return `END Report History
+Recent Reports:
+1. Wildlife Sighting (Sep 20) - Verified
+2. Emergency Alert (Sep 18) - Verified  
+3. Suspicious Activity (Sep 15) - Pending
+4. Wildlife Sighting (Sep 12) - Verified
+5. Emergency (Sep 10) - Verified
+
+Total: 23 reports
+Verification Rate: 83%`
+
+        case '2':
+          return `END Contact Information
+Phone: +254795410486
+Registered: Jan 15, 2024
+Location: Maasai Mara Region
+Status: Active Reporter
+
+To update contact info, 
+SMS "UPDATE [NEW INFO]" to 40133
+or visit wildguard.org/profile`
+
+        case '3':
+          return `END Trust Score: 87/100
+Components:
+- Report Accuracy: 95% (19 pts)
+- Response Speed: 80% (16 pts) 
+- Photo Quality: 90% (18 pts)
+- Location Accuracy: 85% (17 pts)
+- Follow-up: 75% (15 pts)
+
+Keep reporting to increase!`
+
+        case '4':
+          return `END Conservation Impact
+Your Contributions:
+- 23 verified reports
+- 3 emergency alerts
+- 180 KES airtime earned
+- Rank: Top 5% in region
+
+Wildlife Protected:
+- 45+ elephants spotted safely
+- 2 poaching incidents prevented
+- 1 injured animal rescued
+
+You're a conservation hero!`
+
+        default:
+          return `END Invalid selection.`
+      }
+    }
+    
+    return `END Session error.`
+  }
+
+  // Handle rewards menu flow with airtime functionality
+  private static handleRewardsFlow(sessionId: string, text: string, session: USSDMenuState, phoneNumber: string): string {
+    const parts = text.split('*')
+    
+    if (parts.length === 2) {
+      const option = parts[1]
+      
+      switch (option) {
+        case '1':
+          // Request airtime now
+          ussdSessions.set(sessionId, { 
+            step: 'airtime_request', 
+            data: { ...session.data, balance: 45 } 
+          })
+          return `CON Request Airtime
+Available Balance: 45 KES
+
+Choose amount:
+1. 5 KES
+2. 10 KES  
+3. 20 KES
+4. All Balance (45 KES)
+5. Custom Amount
+0. Back to Menu`
+
+        case '2':
+          return `END Earning History
+This Month (September):
+- Wildlife Sighting: 15 KES
+- Emergency Report: 10 KES
+
+Last Month (August):  
+- Wildlife Sightings: 25 KES
+- Poaching Alert: 20 KES
+- Photo Bonus: 5 KES
+
+Total Lifetime: 180 KES
+Average per Report: 7.8 KES`
+
+        case '3':
+          return `END How to Earn More
+Airtime Rewards:
+- Wildlife Sighting: 2-5 KES
+- Emergency Report: 8-15 KES  
+- Poaching Alert: 15-25 KES
+- High Quality Photos: +2 KES
+- GPS Location: +1 KES
+- Quick Response: +3 KES
+
+Tips to Maximize:
+1. Include photos
+2. Provide exact location
+3. Report immediately
+4. Follow up if needed`
+
+        default:
+          return `END Invalid selection.`
+      }
+    } else if (parts.length === 3) {
+      // Handle airtime request amounts
+      const amounts = { '1': 5, '2': 10, '3': 20, '4': 45 }
+      const amount = amounts[parts[2] as keyof typeof amounts]
+      
+      if (amount) {
+        // Process airtime request
+        this.processAirtimeReward(phoneNumber, amount)
+        
+        ussdSessions.delete(sessionId)
+        return `END Airtime Request Sent!
+Amount: ${amount} KES
+Phone: ${phoneNumber}
+
+You will receive airtime within 5 minutes.
+SMS confirmation will be sent.
+
+Thank you for protecting wildlife!
+- WildGuard Team`
+      } else if (parts[2] === '5') {
+        return `CON Custom Amount
+Enter amount (1-45 KES):
+Available Balance: 45 KES`
+      }
+    } else if (parts.length === 4 && parts[2] === '5') {
+      // Custom amount entered
+      const customAmount = parseInt(parts[3])
+      
+      if (customAmount >= 1 && customAmount <= 45) {
+        this.processAirtimeReward(phoneNumber, customAmount)
+        
+        ussdSessions.delete(sessionId)
+        return `END Custom Airtime Sent!
+Amount: ${customAmount} KES
+Phone: ${phoneNumber}
+
+Airtime will arrive within 5 minutes.
+SMS confirmation will follow.
+
+Keep protecting our wildlife!`
+      } else {
+        return `END Invalid amount. 
+Please enter 1-45 KES.`
+      }
+    }
+    
+    return `END Session error.`
+  }
+
+  // Handle tips menu flow
+  private static handleTipsFlow(sessionId: string, text: string, session: USSDMenuState): string {
+    const parts = text.split('*')
+    
+    if (parts.length === 2) {
+      const option = parts[1]
+      
+      const tipCategories = {
+        '1': {
+          title: 'Wildlife Safety',
+          tips: [
+            "Never approach wild animals directly - observe from 50+ meters",
+            "If charged by an elephant, run in zigzag pattern to nearest tree", 
+            "Lions hunt at dawn/dusk - avoid open areas during these times",
+            "Rhinos have poor eyesight but excellent hearing - stay quiet"
+          ]
+        },
+        '2': {
+          title: 'Reporting Best Practices', 
+          tips: [
+            "Include GPS coordinates for faster ranger response",
+            "Take photos from safe distance - zoom instead of getting closer",
+            "Report immediately - every minute counts in emergencies",
+            "Provide animal count and behavior in sighting reports"
+          ]
+        },
+        '3': {
+          title: 'Emergency Procedures',
+          tips: [
+            "For active poaching: Call rangers first, then report via USSD",
+            "Injured animals: Keep distance, note injuries, report location",
+            "Forest fires: Report wind direction and spread rate",
+            "Human-wildlife conflict: Ensure human safety first"
+          ]
+        },
+        '4': {
+          title: 'Animal Behavior',
+          tips: [
+            "Elephants flapping ears = overheated, need water source nearby",
+            "Lions tail-twitching = agitated, preparing to charge",
+            "Buffalo in tight groups = defensive, potential danger",
+            "Vultures circling = death/injury below, investigate safely"
+          ]
+        }
+      }
+      
+      if (option === '5') {
+        // Random tip
+        const allTips = Object.values(tipCategories).flatMap(cat => cat.tips)
+        const randomTip = allTips[Math.floor(Math.random() * allTips.length)]
+        
+        return `END Daily Conservation Tip
+${randomTip}
+
+Stay safe and keep protecting wildlife!
+- WildGuard Team`
+      }
+      
+      const category = tipCategories[option as keyof typeof tipCategories]
+      if (category) {
+        const randomTip = category.tips[Math.floor(Math.random() * category.tips.length)]
+        
+        return `END ${category.title}
+${randomTip}
+
+For more tips, dial *789*90000# 
+and select option 6.
+
+Stay safe out there!`
+      }
+      
+      return `END Invalid selection.`
+    }
+    
+    return `END Session error.`
+  }
+
+  // Process airtime reward
+  private static async processAirtimeReward(phoneNumber: string, amount: number): Promise<void> {
+    try {
+      console.log(`Processing airtime reward: ${amount} KES to ${phoneNumber}`)
+      
+      // Send airtime using the existing method
+      const result = await this.sendAirtime({
+        phoneNumber: phoneNumber,
+        amount: amount,
+        currencyCode: 'KES'
+      })
+      
+      console.log('Airtime reward sent:', result)
+      
+      // Send confirmation SMS
+      await this.sendSMS({
+        to: [phoneNumber],
+        message: `🎉 Airtime Reward Sent!
+
+Amount: ${amount} KES
+Reason: WildGuard Conservation Reward
+
+Thank you for protecting our wildlife!
+Keep reporting to earn more.
+
+- WildGuard Team`
+      })
+      
+    } catch (error) {
+      console.error('Error processing airtime reward:', error)
+      
+      // Send error notification
+      await this.sendSMS({
+        to: [phoneNumber],
+        message: `Airtime reward processing delayed. Your ${amount} KES will be delivered soon. Thank you for your patience!`
+      })
+    }
   }
 }
 
