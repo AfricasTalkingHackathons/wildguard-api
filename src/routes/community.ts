@@ -6,6 +6,55 @@ import { ThreatAnalysisService } from '../services/threatAnalysis'
 
 const router = Router()
 
+/**
+ * @swagger
+ * /community/ussd:
+ *   post:
+ *     summary: Handle USSD Requests
+ *     description: Process USSD menu interactions from Africa's Talking for community reporting
+ *     tags: [Community]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/x-www-form-urlencoded:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - sessionId
+ *               - serviceCode
+ *               - phoneNumber
+ *               - text
+ *             properties:
+ *               sessionId:
+ *                 type: string
+ *                 example: "ATUid_12345"
+ *               serviceCode:
+ *                 type: string
+ *                 example: "*123#"
+ *               phoneNumber:
+ *                 type: string
+ *                 pattern: '^\+254\d{9}$'
+ *                 example: "+254712345678"
+ *               text:
+ *                 type: string
+ *                 example: "1*2*3"
+ *                 description: User's USSD input sequence
+ *     responses:
+ *       200:
+ *         description: USSD response generated successfully
+ *         content:
+ *           text/plain:
+ *             schema:
+ *               type: string
+ *               example: "CON Welcome to WildGuard\\n1. Report Emergency\\n2. Wildlife Sighting\\n3. Suspicious Activity"
+ *       500:
+ *         description: USSD processing failed
+ *         content:
+ *           text/plain:
+ *             schema:
+ *               type: string
+ *               example: "END Sorry, there was a technical error. Please try again later."
+ */
 // USSD endpoint for Africa's Talking
 router.post('/ussd', async (req: Request, res: Response) => {
   try {
@@ -73,6 +122,60 @@ router.post('/ussd', async (req: Request, res: Response) => {
   }
 })
 
+/**
+ * @swagger
+ * /community/sms:
+ *   post:
+ *     summary: Handle Incoming SMS Reports
+ *     description: Process SMS reports from community members via Africa's Talking
+ *     tags: [Community]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/x-www-form-urlencoded:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - from
+ *               - text
+ *               - to
+ *               - id
+ *               - date
+ *             properties:
+ *               from:
+ *                 type: string
+ *                 pattern: '^\+254\d{9}$'
+ *                 example: "+254712345678"
+ *               text:
+ *                 type: string
+ *                 example: "REPORT POACHING Saw 3 men with guns near waterhole"
+ *               to:
+ *                 type: string
+ *                 example: "AFTKNG"
+ *               id:
+ *                 type: string
+ *                 example: "id_123456"
+ *               linkId:
+ *                 type: string
+ *                 example: "linkId_123456"
+ *               date:
+ *                 type: string
+ *                 format: date-time
+ *                 example: "2024-01-15T14:30:00Z"
+ *     responses:
+ *       200:
+ *         description: SMS processed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *       500:
+ *         description: Failed to process SMS
+ */
 // SMS endpoint for receiving reports
 router.post('/sms', async (req: Request, res: Response) => {
   try {
@@ -105,6 +208,54 @@ router.post('/sms', async (req: Request, res: Response) => {
   }
 })
 
+/**
+ * @swagger
+ * /community/voice:
+ *   post:
+ *     summary: Handle Voice Call Reports
+ *     description: Process voice call callbacks and IVR interactions from Africa's Talking
+ *     tags: [Community]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/x-www-form-urlencoded:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               sessionId:
+ *                 type: string
+ *                 example: "ATVoiceSession_123"
+ *               callerNumber:
+ *                 type: string
+ *                 pattern: '^\+254\d{9}$'
+ *                 example: "+254712345678"
+ *               dtmfDigits:
+ *                 type: string
+ *                 example: "1"
+ *                 description: DTMF digits pressed by caller
+ *               recordingUrl:
+ *                 type: string
+ *                 format: uri
+ *                 example: "https://voice.africastalking.com/recordings/voice_123.mp3"
+ *               durationInSeconds:
+ *                 type: integer
+ *                 example: 45
+ *     responses:
+ *       200:
+ *         description: Voice callback processed successfully
+ *         content:
+ *           text/xml:
+ *             schema:
+ *               type: string
+ *               example: |
+ *                 <?xml version="1.0" encoding="UTF-8"?>
+ *                 <Response>
+ *                   <Say voice="woman">Thank you for your report. Rangers have been notified.</Say>
+ *                   <Hangup/>
+ *                 </Response>
+ *       500:
+ *         description: Voice processing failed
+ */
 // Voice endpoint for handling voice reports and IVR
 router.post('/voice', async (req: Request, res: Response) => {
   try {
@@ -149,7 +300,85 @@ router.post('/voice', async (req: Request, res: Response) => {
     res.set('Content-Type', 'text/xml')
     res.send(errorResponse)
   }
-})// Mobile app endpoint for digital reports
+})/**
+ * @swagger
+ * /community/report:
+ *   post:
+ *     summary: Submit Mobile App Report
+ *     description: Submit conservation report via mobile application with media attachments
+ *     tags: [Community]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - phoneNumber
+ *               - type
+ *               - description
+ *             properties:
+ *               phoneNumber:
+ *                 type: string
+ *                 pattern: '^\+254\d{9}$'
+ *                 example: "+254712345678"
+ *               type:
+ *                 type: string
+ *                 enum: [poaching, illegal_logging, wildlife_sighting, suspicious_activity, injury, fence_breach, fire]
+ *                 example: "wildlife_sighting"
+ *               description:
+ *                 type: string
+ *                 example: "Spotted a herd of 15 elephants near the watering hole"
+ *               latitude:
+ *                 type: number
+ *                 example: -1.2921
+ *               longitude:
+ *                 type: number
+ *                 example: 36.8219
+ *               animalSpecies:
+ *                 type: string
+ *                 example: "African Elephant"
+ *               estimatedCount:
+ *                 type: integer
+ *                 minimum: 1
+ *                 example: 15
+ *               mediaUrls:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: uri
+ *                   example: "https://storage.example.com/reports/photo_123.jpg"
+ *               isAnonymous:
+ *                 type: boolean
+ *                 default: false
+ *                 example: false
+ *     responses:
+ *       200:
+ *         description: Report submitted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 reportId:
+ *                   type: string
+ *                   format: uuid
+ *                 message:
+ *                   type: string
+ *                   example: "Report submitted successfully. Rangers have been notified."
+ *       400:
+ *         description: Missing required fields
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         description: Failed to submit report
+ */
+// Mobile app endpoint for digital reports
 router.post('/report', async (req: Request, res: Response) => {
   try {
     const {
@@ -201,6 +430,55 @@ router.post('/report', async (req: Request, res: Response) => {
   }
 })
 
+/**
+ * @swagger
+ * /community/profile/{phoneNumber}:
+ *   get:
+ *     summary: Get User Profile and Report History
+ *     description: Retrieve user profile with trust score, report history, and airtime earnings
+ *     tags: [Community]
+ *     parameters:
+ *       - in: path
+ *         name: phoneNumber
+ *         required: true
+ *         schema:
+ *           type: string
+ *           pattern: '^\+254\d{9}$'
+ *           example: "+254712345678"
+ *         description: User's phone number with country code
+ *     responses:
+ *       200:
+ *         description: User profile retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 phoneNumber:
+ *                   type: string
+ *                   example: "+254712345678"
+ *                 trustScore:
+ *                   type: number
+ *                   minimum: 0
+ *                   maximum: 100
+ *                   example: 85
+ *                 totalReports:
+ *                   type: integer
+ *                   example: 23
+ *                 verifiedReports:
+ *                   type: integer
+ *                   example: 20
+ *                 airtimeEarned:
+ *                   type: integer
+ *                   example: 350
+ *                   description: Total airtime earned in KES
+ *                 recentReports:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Report'
+ *       500:
+ *         description: Failed to get profile
+ */
 // Get user's report history and trust score
 router.get('/profile/:phoneNumber', async (req: Request, res: Response) => {
   try {
@@ -230,6 +508,62 @@ router.get('/profile/:phoneNumber', async (req: Request, res: Response) => {
   }
 })
 
+/**
+ * @swagger
+ * /community/airtime-callback:
+ *   post:
+ *     summary: Handle Airtime Transaction Callbacks
+ *     description: Process airtime delivery status updates from Africa's Talking
+ *     tags: [Community]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/x-www-form-urlencoded:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - phoneNumber
+ *               - amount
+ *               - status
+ *               - transactionId
+ *             properties:
+ *               phoneNumber:
+ *                 type: string
+ *                 pattern: '^\+254\d{9}$'
+ *                 example: "+254712345678"
+ *               amount:
+ *                 type: string
+ *                 example: "KES 5.00"
+ *               status:
+ *                 type: string
+ *                 enum: [Success, Failed, Pending]
+ *                 example: "Success"
+ *               transactionId:
+ *                 type: string
+ *                 example: "ATQid_123456"
+ *               discount:
+ *                 type: string
+ *                 example: "KES 0.50"
+ *               requestId:
+ *                 type: string
+ *                 example: "ATXid_123456"
+ *     responses:
+ *       200:
+ *         description: Callback processed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Callback processed"
+ *       500:
+ *         description: Callback processing failed
+ */
 // Airtime callback endpoint for transaction status updates
 router.post('/airtime-callback', async (req: Request, res: Response) => {
   try {

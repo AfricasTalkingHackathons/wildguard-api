@@ -5,6 +5,71 @@ import { ThreatAnalysisService } from '../services/threatAnalysis'
 
 const router = Router()
 
+/**
+ * @swagger
+ * /rangers/dashboard:
+ *   get:
+ *     summary: Get Ranger Dashboard Overview
+ *     description: Retrieve comprehensive dashboard data with recent reports, threat analysis, and statistics
+ *     tags: [Rangers]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Dashboard data retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 stats:
+ *                   type: object
+ *                   properties:
+ *                     totalReports:
+ *                       type: integer
+ *                       example: 47
+ *                     urgentReports:
+ *                       type: integer
+ *                       example: 8
+ *                     pendingVerifications:
+ *                       type: integer
+ *                       example: 12
+ *                     verifiedToday:
+ *                       type: integer
+ *                       example: 5
+ *                 recentReports:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Report'
+ *                 threatSummary:
+ *                   type: object
+ *                   properties:
+ *                     riskLevel:
+ *                       type: string
+ *                       enum: [low, medium, high, critical]
+ *                       example: "medium"
+ *                     threatAreas:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           area:
+ *                             type: string
+ *                             example: "North Sector"
+ *                           riskScore:
+ *                             type: number
+ *                             example: 0.65
+ *                 pendingReports:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Report'
+ *                 lastUpdated:
+ *                   type: string
+ *                   format: date-time
+ *                   example: "2024-01-15T14:30:00Z"
+ *       500:
+ *         description: Failed to load dashboard
+ */
 // Get dashboard overview for rangers
 router.get('/dashboard', async (req: Request, res: Response) => {
   try {
@@ -53,6 +118,94 @@ router.get('/dashboard', async (req: Request, res: Response) => {
   }
 })
 
+/**
+ * @swagger
+ * /rangers/reports:
+ *   get:
+ *     summary: Get Filtered Reports List
+ *     description: Retrieve reports with filtering, pagination, and sorting options for ranger review
+ *     tags: [Rangers]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [pending, verified, rejected]
+ *         description: Filter by verification status
+ *         example: pending
+ *       - in: query
+ *         name: type
+ *         schema:
+ *           type: string
+ *           enum: [poaching, illegal_logging, wildlife_sighting, suspicious_activity, injury, fence_breach, fire]
+ *         description: Filter by report type
+ *         example: poaching
+ *       - in: query
+ *         name: area
+ *         schema:
+ *           type: string
+ *         description: Filter by conservation area
+ *         example: "Maasai Mara"
+ *       - in: query
+ *         name: startDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Filter reports from this date
+ *         example: "2024-01-01"
+ *       - in: query
+ *         name: endDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Filter reports until this date
+ *         example: "2024-01-31"
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 50
+ *           minimum: 1
+ *           maximum: 100
+ *         description: Number of reports per page
+ *         example: 20
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *           minimum: 1
+ *         description: Page number for pagination
+ *         example: 1
+ *     responses:
+ *       200:
+ *         description: Reports retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 reports:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Report'
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     page:
+ *                       type: integer
+ *                       example: 1
+ *                     limit:
+ *                       type: integer
+ *                       example: 20
+ *                     total:
+ *                       type: integer
+ *                       example: 47
+ *       500:
+ *         description: Failed to get reports
+ */
 // Get all reports with filtering
 router.get('/reports', async (req: Request, res: Response) => {
   try {
@@ -95,6 +248,65 @@ router.get('/reports', async (req: Request, res: Response) => {
   }
 })
 
+/**
+ * @swagger
+ * /rangers/reports/{reportId}/verify:
+ *   post:
+ *     summary: Verify or Reject Report
+ *     description: Mark a report as verified or rejected with ranger notes
+ *     tags: [Rangers]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: reportId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: The ID of the report to verify
+ *         example: "123e4567-e89b-12d3-a456-426614174000"
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - isVerified
+ *               - rangerId
+ *             properties:
+ *               isVerified:
+ *                 type: boolean
+ *                 example: true
+ *                 description: Whether to verify (true) or reject (false) the report
+ *               notes:
+ *                 type: string
+ *                 example: "Confirmed poaching activity - evidence found on-site"
+ *                 description: Ranger's verification notes
+ *               rangerId:
+ *                 type: string
+ *                 example: "ranger_john_kamau"
+ *                 description: ID of the verifying ranger
+ *     responses:
+ *       200:
+ *         description: Report verification completed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Report verified successfully"
+ *       400:
+ *         description: Missing ranger ID
+ *       500:
+ *         description: Failed to verify report
+ */
 // Verify a report
 router.post('/reports/:reportId/verify', async (req: Request, res: Response) => {
   try {
@@ -118,6 +330,66 @@ router.post('/reports/:reportId/verify', async (req: Request, res: Response) => 
   }
 })
 
+/**
+ * @swagger
+ * /rangers/threats:
+ *   get:
+ *     summary: Get Threat Predictions for Location
+ *     description: Retrieve current threat predictions and risk assessment for a specific location
+ *     tags: [Rangers]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: lat
+ *         required: true
+ *         schema:
+ *           type: number
+ *         description: Latitude coordinate
+ *         example: -1.2921
+ *       - in: query
+ *         name: lng
+ *         required: true
+ *         schema:
+ *           type: number
+ *         description: Longitude coordinate
+ *         example: 36.8219
+ *       - in: query
+ *         name: radius
+ *         schema:
+ *           type: number
+ *           default: 0.05
+ *         description: Search radius in decimal degrees
+ *         example: 0.1
+ *     responses:
+ *       200:
+ *         description: Threat data retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 threats:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/ThreatPrediction'
+ *                 location:
+ *                   type: object
+ *                   properties:
+ *                     lat:
+ *                       type: number
+ *                       example: -1.2921
+ *                     lng:
+ *                       type: number
+ *                       example: 36.8219
+ *                 radius:
+ *                   type: number
+ *                   example: 0.05
+ *       400:
+ *         description: Missing latitude or longitude
+ *       500:
+ *         description: Failed to get threats
+ */
 // Get threat predictions for an area
 router.get('/threats', async (req: Request, res: Response) => {
   try {

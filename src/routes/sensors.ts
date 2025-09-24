@@ -27,6 +27,84 @@ const sensorRegistrationSchema = z.object({
 })
 
 /**
+ * @swagger
+ * /api/sensors/data:
+ *   post:
+ *     summary: Process IoT Sensor Data
+ *     description: Receive and process sensor data with automatic threat detection via NightGuard
+ *     tags: [Sensors]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - sensorId
+ *               - dataType
+ *               - value
+ *             properties:
+ *               sensorId:
+ *                 type: string
+ *                 format: uuid
+ *                 example: "123e4567-e89b-12d3-a456-426614174000"
+ *               dataType:
+ *                 type: string
+ *                 enum: [image, audio, movement, temperature, humidity, gps]
+ *                 example: "image"
+ *               value:
+ *                 oneOf:
+ *                   - type: string
+ *                     example: "base64encodedimage"
+ *                   - type: object
+ *                     example: {"temperature": 25.5, "unit": "celsius"}
+ *                 description: Sensor data value (flexible structure)
+ *               metadata:
+ *                 type: object
+ *                 properties:
+ *                   confidence:
+ *                     type: number
+ *                     example: 0.85
+ *                   threat_detected:
+ *                     type: boolean
+ *                     example: true
+ *                   additional_info:
+ *                     type: string
+ *                     example: "Motion detected in sector 3"
+ *               timestamp:
+ *                 type: string
+ *                 format: date-time
+ *                 example: "2024-01-15T14:30:00Z"
+ *     responses:
+ *       200:
+ *         description: Sensor data processed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Sensor data processed successfully"
+ *                 sensorId:
+ *                   type: string
+ *                   format: uuid
+ *                 processed:
+ *                   type: boolean
+ *                   example: true
+ *       400:
+ *         description: Invalid sensor data format
+ *       404:
+ *         description: Sensor not found
+ *       500:
+ *         description: Failed to process sensor data
+ */
+/**
  * POST /api/sensors/data
  * Receive sensor data and trigger threat analysis
  */
@@ -79,6 +157,89 @@ router.post('/data', async (req: Request, res: Response) => {
   }
 })
 
+/**
+ * @swagger
+ * /api/sensors/register:
+ *   post:
+ *     summary: Register New Sensor Device
+ *     description: Register a new IoT sensor device in the conservation network
+ *     tags: [Sensors]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - deviceId
+ *               - name
+ *               - type
+ *               - latitude
+ *               - longitude
+ *             properties:
+ *               deviceId:
+ *                 type: string
+ *                 example: "MAASAI_CAMERA_001"
+ *                 description: Unique device identifier
+ *               name:
+ *                 type: string
+ *                 example: "North Gate Camera Trap"
+ *                 description: Human-readable sensor name
+ *               type:
+ *                 type: string
+ *                 enum: [camera_trap, motion_sensor, acoustic_sensor, gps_collar, weather_station]
+ *                 example: "camera_trap"
+ *               latitude:
+ *                 type: number
+ *                 example: -1.2921
+ *               longitude:
+ *                 type: number
+ *                 example: 36.8219
+ *               conservationAreaId:
+ *                 type: string
+ *                 format: uuid
+ *                 example: "123e4567-e89b-12d3-a456-426614174000"
+ *                 description: Optional conservation area assignment
+ *               configuration:
+ *                 type: object
+ *                 properties:
+ *                   sensitivity:
+ *                     type: string
+ *                     example: "high"
+ *                   detection_range:
+ *                     type: number
+ *                     example: 50
+ *                   battery_threshold:
+ *                     type: number
+ *                     example: 20
+ *     responses:
+ *       201:
+ *         description: Sensor registered successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Sensor registered successfully"
+ *                 sensorId:
+ *                   type: string
+ *                   format: uuid
+ *                 sensor:
+ *                   $ref: '#/components/schemas/Sensor'
+ *       400:
+ *         description: Invalid sensor registration data
+ *       409:
+ *         description: Sensor device already registered
+ *       500:
+ *         description: Failed to register sensor
+ */
 /**
  * POST /api/sensors/register
  * Register a new sensor device
@@ -155,6 +316,62 @@ router.post('/register', async (req: Request, res: Response) => {
   }
 })
 
+/**
+ * @swagger
+ * /api/sensors/status/{sensorId}:
+ *   get:
+ *     summary: Get Sensor Status and Recent Data
+ *     description: Retrieve detailed sensor information, statistics, and recent data readings
+ *     tags: [Sensors]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: sensorId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: The ID of the sensor to query
+ *         example: "123e4567-e89b-12d3-a456-426614174000"
+ *     responses:
+ *       200:
+ *         description: Sensor status retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 sensor:
+ *                   $ref: '#/components/schemas/Sensor'
+ *                 statistics:
+ *                   type: object
+ *                   properties:
+ *                     totalReadingsToday:
+ *                       type: integer
+ *                       example: 147
+ *                     threatDetections:
+ *                       type: integer
+ *                       example: 3
+ *                     lastReading:
+ *                       type: string
+ *                       format: date-time
+ *                       example: "2024-01-15T14:25:00Z"
+ *                     averageConfidence:
+ *                       type: number
+ *                       example: 0.87
+ *                 recentData:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/SensorData'
+ *       404:
+ *         description: Sensor not found
+ *       500:
+ *         description: Failed to get sensor status
+ */
 /**
  * GET /api/sensors/status/:sensorId
  * Get sensor status and recent data
@@ -270,6 +487,81 @@ router.get('/alerts', async (req: Request, res: Response) => {
   }
 })
 
+/**
+ * @swagger
+ * /api/sensors/network:
+ *   get:
+ *     summary: Get Sensor Network Overview
+ *     description: Retrieve comprehensive overview of all sensors with statistics and status
+ *     tags: [Sensors]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Sensor network overview retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 overview:
+ *                   type: object
+ *                   properties:
+ *                     totalSensors:
+ *                       type: integer
+ *                       example: 45
+ *                     activeSensors:
+ *                       type: integer
+ *                       example: 42
+ *                     onlineSensors:
+ *                       type: integer
+ *                       example: 38
+ *                     sensorsWithThreats:
+ *                       type: integer
+ *                       example: 7
+ *                     totalThreatsLast24h:
+ *                       type: integer
+ *                       example: 15
+ *                     averageBatteryLevel:
+ *                       type: number
+ *                       example: 78.5
+ *                     sensorTypes:
+ *                       type: object
+ *                       properties:
+ *                         camera_trap:
+ *                           type: integer
+ *                           example: 25
+ *                         motion_sensor:
+ *                           type: integer
+ *                           example: 15
+ *                         acoustic_sensor:
+ *                           type: integer
+ *                           example: 5
+ *                 sensors:
+ *                   type: array
+ *                   items:
+ *                     allOf:
+ *                       - $ref: '#/components/schemas/Sensor'
+ *                       - type: object
+ *                         properties:
+ *                           stats:
+ *                             type: object
+ *                             properties:
+ *                               readingsLast24h:
+ *                                 type: integer
+ *                                 example: 147
+ *                               threatsDetected:
+ *                                 type: integer
+ *                                 example: 3
+ *                               isOnline:
+ *                                 type: boolean
+ *                                 example: true
+ *       500:
+ *         description: Failed to get sensor network data
+ */
 /**
  * GET /api/sensors/network
  * Get sensor network overview

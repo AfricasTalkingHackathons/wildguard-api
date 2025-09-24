@@ -2,6 +2,8 @@ import express, { Request, Response, NextFunction } from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
 import rateLimit from 'express-rate-limit'
+import swaggerUi from 'swagger-ui-express'
+import swaggerSpec from './config/swagger'
 
 // Import routes
 import communityRoutes from './routes/community'
@@ -66,54 +68,32 @@ app.get('/api/ws', (req: Request, res: Response) => {
 
 // API documentation endpoint
 app.get('/api/docs', (req: Request, res: Response) => {
-  res.json({
-    title: 'WildGuard Conservation API',
-    version: '1.0.0',
-    description: 'Unified conservation intelligence platform for Africa',
-    endpoints: {
-      community: {
-        ussd: 'POST /api/community/ussd - USSD callback for Africa\'s Talking',
-        sms: 'POST /api/community/sms - SMS webhook for Africa\'s Talking',
-        voice: 'POST /api/community/voice - Voice callback for Africa\'s Talking',
-        report: 'POST /api/community/report - Submit report via mobile app',
-        profile: 'GET /api/community/profile/:phoneNumber - Get user profile',
-      },
-      rangers: {
-        dashboard: 'GET /api/rangers/dashboard - Ranger dashboard overview',
-        reports: 'GET /api/rangers/reports - List all reports with filters',
-        verify: 'POST /api/rangers/reports/:id/verify - Verify a report',
-        threats: 'GET /api/rangers/threats - Get threat predictions',
-        analyze: 'POST /api/rangers/threats/analyze - Analyze threats at location',
-        alerts: 'GET /api/rangers/alerts/stream - Real-time alert stream',
-        analytics: 'GET /api/rangers/analytics - Conservation analytics',
-      },
-      sensors: {
-        data: 'POST /api/sensors/data - Submit sensor data for processing',
-        register: 'POST /api/sensors/register - Register new sensor device',
-        status: 'GET /api/sensors/status/:sensorId - Get sensor status',
-        alerts: 'GET /api/sensors/alerts - Get recent night guard alerts',
-        network: 'GET /api/sensors/network - Get sensor network overview',
-        maintenance: 'POST /api/sensors/:sensorId/maintenance - Update sensor maintenance',
-      },
-      system: {
-        health: 'GET /health - System health check',
-        stats: 'GET /api/stats - API usage statistics',
-        test: 'POST /api/test-sms - Test Africa\'s Talking SMS',
-        emergency: 'POST /api/emergency-alert - Send emergency alerts',
-        sensors: 'POST /api/sensor-data - Process IoT sensor data',
-      },
-    },
-    features: [
-      'Community reporting via SMS, USSD, Voice, and Mobile App',
-      'Automated threat analysis and prediction',
-      'Real-time ranger dashboard and alerts',
-      'Airtime rewards for verified reports',
-      'Trust network for crowd-sourced verification',
-      'IoT sensor data integration',
-      'Night Guard automated monitoring',
-      'Predictive conservation analytics',
-    ],
-  })
+  res.redirect('/docs')
+})
+
+// Swagger UI setup
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+  explorer: true,
+  customCss: `
+    .swagger-ui .topbar { display: none; }
+    .swagger-ui .info .title { color: #2d8659; }
+    .swagger-ui .scheme-container { background: #f8f9fa; padding: 15px; border-radius: 5px; }
+  `,
+  customSiteTitle: "WildGuard Conservation API Documentation",
+  swaggerOptions: {
+    persistAuthorization: true,
+    displayRequestDuration: true,
+    docExpansion: 'list',
+    filter: true,
+    showExtensions: true,
+    tryItOutEnabled: true,
+  },
+}))
+
+// OpenAPI spec endpoint
+app.get('/api/openapi.json', (req: Request, res: Response) => {
+  res.setHeader('Content-Type', 'application/json')
+  res.send(swaggerSpec)
 })
 
 // Error handling middleware
