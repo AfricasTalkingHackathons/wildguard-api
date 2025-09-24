@@ -287,9 +287,8 @@ export class AfricasTalkingService {
       if (text === '') {
         // First interaction - show main menu
         ussdSessions.set(sessionId, { step: 'main', data: {} })
-        return `CON Welcome to WildGuard 🌿
+        return `CON Welcome to WildGuard
 Wildlife Protection Platform
-
 1. Report Wildlife Emergency
 2. Report Wildlife Sighting
 3. Report Suspicious Activity
@@ -300,9 +299,8 @@ Wildlife Protection Platform
       } else if (text === '1') {
         // Wildlife Emergency
         ussdSessions.set(sessionId, { step: 'emergency_type', data: { category: 'emergency' } })
-        return `CON 🚨 WILDLIFE EMERGENCY 🚨
+        return `CON WILDLIFE EMERGENCY
 Choose emergency type:
-
 1. Active Poaching
 2. Injured Large Animal
 3. Animal-Human Conflict
@@ -313,73 +311,62 @@ Choose emergency type:
       } else if (text === '2') {
         // Wildlife Sighting
         ussdSessions.set(sessionId, { step: 'sighting_animal', data: { category: 'sighting' } })
-        return `CON Wildlife Sighting 🦁
+        return `CON Wildlife Sighting
 Select animal type:
-
-1. Big 5 (Elephant, Rhino, Lion, Leopard, Buffalo)
-2. Primates (Monkey, Baboon, Chimpanzee)
-3. Antelope (Gazelle, Impala, Zebra)
-4. Birds (Eagle, Vulture, Ostrich)
+1. Big 5 Animals
+2. Primates
+3. Antelope & Zebra
+4. Birds
 5. Other Wildlife
 0. Back to Main Menu`
 
       } else if (text === '3') {
         // Suspicious Activity
         ussdSessions.set(sessionId, { step: 'suspicious_type', data: { category: 'suspicious' } })
-        return `CON Suspicious Activity 🚨
+        return `CON Suspicious Activity
 Select activity type:
-
 1. Suspicious Persons/Vehicles
-2. Illegal Logging/Tree Cutting
-3. Fence Cutting/Damage
-4. Night Activity with Lights
-5. Unusual Sounds (Gunshots)
+2. Illegal Logging
+3. Fence Damage
+4. Night Activity
+5. Gunshots/Sounds
 0. Back to Main Menu`
 
       } else if (text === '4') {
         // User Profile - would query database in production
-        return `END Your WildGuard Profile 📊
-
-Trust Score: 87/100 ⭐
+        return `END Your WildGuard Profile
+Trust Score: 87/100
 Total Reports: 23
 Verified Reports: 19
 Pending Reports: 2
-
-Monthly Ranking: #5 in your area
+Monthly Ranking: #5
 Conservation Impact: High
-
-Keep protecting our wildlife! 🌿`
+Keep protecting wildlife!`
 
       } else if (text === '5') {
         // Reward Balance - would query database
-        return `END WildGuard Rewards 💰
-
+        return `END WildGuard Rewards
 Current Balance: 45 KES
 This Month Earned: 25 KES
 Total Lifetime: 180 KES
-
-Pending Verification: 2 reports (10 KES)
-
-Thank you for being a conservation hero! 🦏`
+Pending Verification: 2 reports
+Thank you for being a hero!`
 
       } else if (text === '6') {
         // Conservation Tips
         const tips = [
-          "🦏 Never approach wild animals directly",
-          "📱 Take photos/videos from a safe distance",
-          "⏰ Report poaching immediately - every minute counts",
-          "🌙 Night sounds of chainsaws = illegal logging",
-          "📍 Always share your exact location in reports"
+          "Never approach wild animals directly",
+          "Take photos from a safe distance", 
+          "Report poaching immediately",
+          "Night chainsaw sounds = illegal logging",
+          "Always share your exact location"
         ]
         const randomTip = tips[Math.floor(Math.random() * tips.length)]
         
-        return `END Conservation Tip 💡
-
+        return `END Conservation Tip
 ${randomTip}
-
 Stay safe and keep protecting wildlife!
-
-- WildGuard Team 🌿`
+- WildGuard Team`
 
       } else if (text.startsWith('1*')) {
         // Emergency flow
@@ -396,7 +383,6 @@ Stay safe and keep protecting wildlife!
       } else {
         // Invalid input
         return `CON Invalid selection. Try again.
-
 1. Report Wildlife Emergency
 2. Report Wildlife Sighting  
 3. Report Suspicious Activity
@@ -434,10 +420,8 @@ Stay safe and keep protecting wildlife!
         data: { ...session.data, type: selectedType, urgency: 'urgent' }
       })
       
-      return `CON ${selectedType} Emergency 🚨
-
+      return `CON ${selectedType} Emergency
 Do you have GPS coordinates?
-
 1. Yes - I'll provide coordinates
 2. No - Use landmark description  
 3. I'm at the location now
@@ -463,15 +447,12 @@ Do you have GPS coordinates?
       if (method === 'coordinates') {
         return `CON Enter GPS coordinates:
 Format: -1.4061, 35.0117
-
 Enter latitude, longitude:`
       } else if (method === 'landmark') {
         return `CON Describe the location:
-
 Enter nearest landmark, road, or known place:`
       } else {
         return `CON Additional details:
-
 Briefly describe what you see:
 (How many people/animals, weapons, vehicles)`
       }
@@ -493,13 +474,10 @@ Briefly describe what you see:
       
       ussdSessions.delete(sessionId)
       
-      return `END 🚨 EMERGENCY REPORTED 🚨
-
+      return `END EMERGENCY REPORTED
 Rangers alerted immediately!
 Report ID: EMG${Date.now()}
-
 Expected response time: 15-30 minutes
-
 Stay safe. Help is coming.
 - WildGuard`
     }
@@ -528,10 +506,8 @@ Stay safe. Help is coming.
         data: { ...session.data, animalCategory: category }
       })
       
-      return `CON ${category} Sighting 🦁
-
+      return `CON ${category} Sighting
 How many animals?
-
 1. 1-5 animals
 2. 6-15 animals
 3. 16-30 animals  
@@ -556,7 +532,6 @@ How many animals?
       })
       
       return `CON Animal Condition:
-
 1. Healthy & Active
 2. With Young/Babies
 3. Feeding/Drinking
@@ -589,14 +564,11 @@ How many animals?
       
       const rewardAmount = condition === 'Dead/Injured' ? '4-5 KES' : '1-2 KES'
       
-      return `END Wildlife Sighting Recorded! 🦁
-
+      return `END Wildlife Sighting Recorded!
 ${reportData.animalCategory}: ${reportData.animalCount} animals
 Condition: ${condition}
-
 Report ID: WS${Date.now()}
 Potential Reward: ${rewardAmount}
-
 Thank you for monitoring wildlife!`
     }
     
@@ -624,10 +596,8 @@ Thank you for monitoring wildlife!`
         data: { ...session.data, activityType: activityType }
       })
       
-      return `CON ${activityType} 🚨
-
+      return `CON ${activityType}
 When did this happen?
-
 1. Happening right now
 2. Within last hour
 3. Within last 24 hours
@@ -659,24 +629,18 @@ When did this happen?
       ussdSessions.delete(sessionId)
       
       const response = parts[2] === '1' ? 
-        `END 🚨 URGENT REPORT SUBMITTED 🚨
-
+        `END URGENT REPORT SUBMITTED
 Rangers alerted immediately!
 Report ID: SA${Date.now()}
-
 Stay safe and avoid the area.
 Response time: 15-30 minutes
-
 - WildGuard` :
-        `END Suspicious Activity Reported 🚨
-
+        `END Suspicious Activity Reported
 Activity: ${reportData.activityType}
 Timing: ${timing}
 Report ID: SA${Date.now()}
-
 Rangers have been notified.
 Potential reward: 2-4 KES
-
 Thank you for your vigilance!`
       
       return response
