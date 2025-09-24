@@ -126,7 +126,7 @@ app.use('/docs', (req: Request, res: Response, next: NextFunction) => {
   next()
 })
 
-// Swagger UI setup
+// Swagger UI setup with local assets to avoid CDN issues
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
   explorer: true,
   customCss: `
@@ -138,9 +138,11 @@ app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
   `,
   customSiteTitle: "WildGuard Conservation API Documentation",
   swaggerOptions: {
+    url: undefined, // Force using spec object instead of URL
+    spec: swaggerSpec, // Use local spec object
     persistAuthorization: true,
     displayRequestDuration: true,
-    docExpansion: 'list', // Ensure sections can be expanded
+    docExpansion: 'list',
     filter: true,
     showExtensions: true,
     tryItOutEnabled: true,
