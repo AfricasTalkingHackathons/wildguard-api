@@ -1,7 +1,7 @@
 # Multi-stage Docker build for WildGuard API
 
 # Build stage
-FROM node:18-alpine AS builder
+FROM node:20-alpine AS builder
 
 # Set working directory
 WORKDIR /app
@@ -15,13 +15,12 @@ RUN npm ci --only=production && npm ci --only=development
 
 # Copy source code
 COPY src ./src
-COPY env.ts ./
 
 # Build TypeScript
 RUN npm run build
 
 # Production stage
-FROM node:18-alpine AS production
+FROM node:20-alpine AS production
 
 # Install system dependencies for PostgreSQL
 RUN apk add --no-cache postgresql-client curl
@@ -41,7 +40,6 @@ RUN npm ci --only=production && npm cache clean --force
 
 # Copy built application from builder stage
 COPY --from=builder --chown=wildguard:nodejs /app/dist ./dist
-COPY --from=builder --chown=wildguard:nodejs /app/env.ts ./
 
 # Create uploads directory for media files
 RUN mkdir -p uploads && chown wildguard:nodejs uploads
