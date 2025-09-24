@@ -54,7 +54,7 @@ export class AfricasTalkingService {
       const result = await sms.send({
         to: options.to,
         message: options.message,
-        from: options.from || 'WildGuard',
+        from: options.from || 'AFTKNG', // Your registered sender ID
       })
       
       console.log('SMS sent successfully:', result)
@@ -208,6 +208,7 @@ export class AfricasTalkingService {
     return this.sendSMS({
       to: phoneNumbers,
       message: urgentMessage,
+      from: 'AFTKNG', // Use your registered sender ID
     })
   }
 
@@ -218,6 +219,7 @@ export class AfricasTalkingService {
     return this.sendSMS({
       to: [phoneNumber],
       message,
+      from: 'AFTKNG', // Use your registered sender ID
     })
   }
 
@@ -228,6 +230,7 @@ export class AfricasTalkingService {
     return this.sendSMS({
       to: [phoneNumber],
       message,
+      from: 'AFTKNG', // Use your registered sender ID
     })
   }
 
@@ -238,6 +241,7 @@ export class AfricasTalkingService {
     return this.sendSMS({
       to: [phoneNumber],
       message,
+      from: 'AFTKNG', // Use your registered sender ID
     })
   }
 

@@ -93,6 +93,7 @@ router.post('/sms', async (req: Request, res: Response) => {
       await AfricasTalkingService.sendSMS({
         to: [from],
         message: `Welcome to WildGuard! 🌿\n\nTo report wildlife incidents:\n• Text: REPORT [TYPE] [DESCRIPTION]\n• Types: POACHING, SIGHTING, INJURY, FIRE\n• Or dial *123#\n\nExample: REPORT POACHING Saw 3 men with guns near waterhole`,
+        from: 'AFTKNG' // Use your registered sender ID
       })
     }
 
@@ -252,7 +253,8 @@ router.post('/airtime-callback', async (req: Request, res: Response) => {
       if (status === 'Success') {
         await AfricasTalkingService.sendSMS({
           to: [phoneNumber],
-          message: `✅ Airtime Delivered!\n\nAmount: ${amount}\nTransaction: ${transactionId}\n\nThank you for protecting wildlife!\n- WildGuard`
+          message: `✅ Airtime Delivered!\n\nAmount: ${amount}\nTransaction: ${transactionId}\n\nThank you for protecting wildlife!\n- WildGuard`,
+          from: 'AFTKNG' // Use your registered sender ID
         })
       } else if (status === 'Failed') {
         console.error(`Airtime delivery failed for ${phoneNumber}: ${amount}`)
