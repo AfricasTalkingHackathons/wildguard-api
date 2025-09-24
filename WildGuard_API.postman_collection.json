@@ -1,0 +1,533 @@
+{
+  "info": {
+    "name": "WildGuard Conservation API",
+    "description": "Complete API collection for WildGuard conservation platform",
+    "version": "1.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "phoneNumber",
+      "value": "+254712345678",
+      "type": "string"
+    },
+    {
+      "key": "reportId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "sensorId", 
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "System",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            },
+            "description": "Check system health and status"
+          }
+        },
+        {
+          "name": "API Stats", 
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/stats",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "stats"]
+            },
+            "description": "Get API usage statistics"
+          }
+        },
+        {
+          "name": "Test SMS",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phoneNumber\": \"{{phoneNumber}}\",\n  \"message\": \"Test SMS from WildGuard API\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/test-sms",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "test-sms"]
+            },
+            "description": "Test Africa's Talking SMS integration"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Community",
+      "item": [
+        {
+          "name": "Submit Report",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phoneNumber\": \"{{phoneNumber}}\",\n  \"type\": \"poaching\",\n  \"description\": \"Saw 3 men with guns near waterhole at dawn\",\n  \"latitude\": -2.153456,\n  \"longitude\": 34.678901,\n  \"animalSpecies\": \"elephant\",\n  \"estimatedCount\": 5,\n  \"urgency\": \"high\",\n  \"mediaUrls\": [],\n  \"isAnonymous\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/community/report",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "community", "report"]
+            },
+            "description": "Submit wildlife/poaching report from community member"
+          }
+        },
+        {
+          "name": "Get User Profile",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/community/profile/{{phoneNumber}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "community", "profile", "{{phoneNumber}}"]
+            },
+            "description": "Get community member profile and statistics"
+          }
+        },
+        {
+          "name": "Wildlife Sighting Report",
+          "request": {
+            "method": "POST", 
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phoneNumber\": \"{{phoneNumber}}\",\n  \"type\": \"wildlife_sighting\",\n  \"description\": \"Herd of 12 elephants at River Crossing\",\n  \"latitude\": -2.150000,\n  \"longitude\": 34.680000,\n  \"animalSpecies\": \"elephant\",\n  \"estimatedCount\": 12,\n  \"urgency\": \"low\",\n  \"isAnonymous\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/community/report",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "community", "report"]
+            },
+            "description": "Submit wildlife sighting report"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Rangers",
+      "item": [
+        {
+          "name": "Dashboard Overview",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/rangers/dashboard",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "rangers", "dashboard"]
+            },
+            "description": "Get ranger dashboard with summary statistics"
+          }
+        },
+        {
+          "name": "List All Reports",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/rangers/reports",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "rangers", "reports"]
+            },
+            "description": "Get all conservation reports"
+          }
+        },
+        {
+          "name": "Filter Reports - Pending High Priority",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/rangers/reports?status=pending&priority=high&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "rangers", "reports"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "pending"
+                },
+                {
+                  "key": "priority", 
+                  "value": "high"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Get pending high priority reports"
+          }
+        },
+        {
+          "name": "Verify Report",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"verify\",\n  \"notes\": \"Confirmed by patrol team. Evidence collected at scene.\",\n  \"rewardAmount\": 75.00,\n  \"followUpRequired\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/rangers/reports/{{reportId}}/verify",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "rangers", "reports", "{{reportId}}", "verify"]
+            },
+            "description": "Verify a community report as accurate"
+          }
+        },
+        {
+          "name": "Reject Report",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"reject\",\n  \"notes\": \"No evidence found. Possible false alarm.\",\n  \"followUpRequired\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/rangers/reports/{{reportId}}/verify",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "rangers", "reports", "{{reportId}}", "verify"]
+            },
+            "description": "Reject a report as false/spam"
+          }
+        },
+        {
+          "name": "Get Threat Predictions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/rangers/threats",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "rangers", "threats"]
+            },
+            "description": "Get AI-generated threat predictions"
+          }
+        },
+        {
+          "name": "Analyze Location Threat",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"latitude\": -2.153456,\n  \"longitude\": 34.678901,\n  \"reportType\": \"poaching\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/rangers/threats/analyze",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "rangers", "threats", "analyze"]
+            },
+            "description": "Analyze threat level at specific coordinates"
+          }
+        },
+        {
+          "name": "Get Analytics - 30 Days",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/rangers/analytics?period=30d&type=incidents",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "rangers", "analytics"],
+              "query": [
+                {
+                  "key": "period",
+                  "value": "30d"
+                },
+                {
+                  "key": "type",
+                  "value": "incidents"
+                }
+              ]
+            },
+            "description": "Get 30-day conservation analytics"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Sensors",
+      "item": [
+        {
+          "name": "Register Camera Trap",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"deviceId\": \"WILDCAM001\",\n  \"name\": \"Water Hole Camera 3\",\n  \"type\": \"camera_trap\",\n  \"latitude\": -2.153456,\n  \"longitude\": 34.678901,\n  \"configuration\": {\n    \"capture_interval\": 300,\n    \"night_vision\": true,\n    \"motion_sensitivity\": \"high\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/sensors/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "sensors", "register"]
+            },
+            "description": "Register a new camera trap sensor"
+          }
+        },
+        {
+          "name": "Register Acoustic Sensor",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"deviceId\": \"ACOUSTIC001\",\n  \"name\": \"Perimeter Audio Monitor\",\n  \"type\": \"acoustic_sensor\",\n  \"latitude\": -2.155000,\n  \"longitude\": 34.675000,\n  \"configuration\": {\n    \"sensitivity\": \"high\",\n    \"frequency_range\": \"20-20000\",\n    \"gunshot_detection\": true\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/sensors/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "sensors", "register"]
+            },
+            "description": "Register acoustic monitoring sensor"
+          }
+        },
+        {
+          "name": "Submit Camera Data - High Threat",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sensorId\": \"{{sensorId}}\",\n  \"dataType\": \"image\",\n  \"value\": {\n    \"objects\": [\"person\", \"vehicle\", \"weapon\"],\n    \"confidence\": 0.91,\n    \"night_vision\": true,\n    \"rapid_succession\": true\n  },\n  \"metadata\": {\n    \"camera_model\": \"TrailCam Pro\",\n    \"battery_level\": 78,\n    \"temperature\": 24.5\n  },\n  \"timestamp\": \"2025-09-23T02:15:00Z\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/sensors/data",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "sensors", "data"]
+            },
+            "description": "Submit high-threat camera trap detection"
+          }
+        },
+        {
+          "name": "Submit Audio Data - Gunshot",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sensorId\": \"{{sensorId}}\",\n  \"dataType\": \"audio\",\n  \"value\": {\n    \"audio_classification\": [\"gunshot\", \"human_voices\"],\n    \"intensity\": 95,\n    \"duration\": 2.3,\n    \"frequency_analysis\": {\n      \"peak_frequency\": 2500,\n      \"gunshot_probability\": 0.94\n    }\n  },\n  \"metadata\": {\n    \"sensor_model\": \"AudioGuard Pro\",\n    \"battery_level\": 82\n  },\n  \"timestamp\": \"2025-09-23T02:16:30Z\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/sensors/data",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "sensors", "data"]
+            },
+            "description": "Submit gunshot detection from acoustic sensor"
+          }
+        },
+        {
+          "name": "Get Sensor Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/sensors/status/{{sensorId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "sensors", "status", "{{sensorId}}"]
+            },
+            "description": "Get individual sensor status and recent activity"
+          }
+        },
+        {
+          "name": "Get Network Overview",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/sensors/network",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "sensors", "network"]
+            },
+            "description": "Get complete sensor network status"
+          }
+        },
+        {
+          "name": "Get Night Guard Alerts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/sensors/alerts?hours=24",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "sensors", "alerts"],
+              "query": [
+                {
+                  "key": "hours",
+                  "value": "24"
+                }
+              ]
+            },
+            "description": "Get recent Night Guard automated alerts"
+          }
+        },
+        {
+          "name": "Update Sensor Maintenance",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"active\",\n  \"batteryLevel\": 95,\n  \"notes\": \"Battery replaced, lens cleaned, firmware updated\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/sensors/{{sensorId}}/maintenance",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "sensors", "{{sensorId}}", "maintenance"]
+            },
+            "description": "Update sensor maintenance status"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Emergency",
+      "item": [
+        {
+          "name": "Emergency Alert - Active Poaching",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"alertType\": \"poaching_confirmed\",\n  \"message\": \"URGENT: Active poaching detected at Water Hole 3. Multiple suspects with weapons. Immediate response required.\",\n  \"location\": {\n    \"latitude\": -2.153456,\n    \"longitude\": 34.678901\n  },\n  \"priority\": \"critical\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/emergency-alert",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "emergency-alert"]
+            },
+            "description": "Send emergency alert to all rangers"
+          }
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Auto-generate timestamp",
+          "pm.globals.set('timestamp', new Date().toISOString());"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript", 
+        "exec": [
+          "// Test for successful response",
+          "pm.test('Status code is successful', function () {",
+          "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+          "});",
+          "",
+          "// Parse response and set variables",
+          "if (pm.response.code === 200 || pm.response.code === 201) {",
+          "    const response = pm.response.json();",
+          "    ",
+          "    // Set reportId if present",
+          "    if (response.reportId) {",
+          "        pm.collectionVariables.set('reportId', response.reportId);",
+          "    }",
+          "    ",
+          "    // Set sensorId if present", 
+          "    if (response.sensorId) {",
+          "        pm.collectionVariables.set('sensorId', response.sensorId);",
+          "    }",
+          "}"
+        ]
+      }
+    }
+  ]
+}
