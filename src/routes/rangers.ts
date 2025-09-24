@@ -7,7 +7,7 @@ const router = Router()
 
 /**
  * @swagger
- * /rangers/dashboard:
+ * /api/rangers/dashboard:
  *   get:
  *     summary: Get Ranger Dashboard Overview
  *     description: Retrieve comprehensive dashboard data with recent reports, threat analysis, and statistics
@@ -120,7 +120,7 @@ router.get('/dashboard', async (req: Request, res: Response) => {
 
 /**
  * @swagger
- * /rangers/reports:
+ * /api/rangers/reports:
  *   get:
  *     summary: Get Filtered Reports List
  *     description: Retrieve reports with filtering, pagination, and sorting options for ranger review
@@ -250,7 +250,7 @@ router.get('/reports', async (req: Request, res: Response) => {
 
 /**
  * @swagger
- * /rangers/reports/{reportId}/verify:
+ * /api/rangers/reports/{reportId}/verify:
  *   post:
  *     summary: Verify or Reject Report
  *     description: Mark a report as verified or rejected with ranger notes
@@ -332,7 +332,7 @@ router.post('/reports/:reportId/verify', async (req: Request, res: Response) => 
 
 /**
  * @swagger
- * /rangers/threats:
+ * /api/rangers/threats:
  *   get:
  *     summary: Get Threat Predictions for Location
  *     description: Retrieve current threat predictions and risk assessment for a specific location

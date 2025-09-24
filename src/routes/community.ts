@@ -8,7 +8,7 @@ const router = Router()
 
 /**
  * @swagger
- * /community/ussd:
+ * /api/community/ussd:
  *   post:
  *     summary: Handle USSD Requests
  *     description: Process USSD menu interactions from Africa's Talking for community reporting
@@ -124,7 +124,7 @@ router.post('/ussd', async (req: Request, res: Response) => {
 
 /**
  * @swagger
- * /community/sms:
+ * /api/community/sms:
  *   post:
  *     summary: Handle Incoming SMS Reports
  *     description: Process SMS reports from community members via Africa's Talking
@@ -210,7 +210,7 @@ router.post('/sms', async (req: Request, res: Response) => {
 
 /**
  * @swagger
- * /community/voice:
+ * /api/community/voice:
  *   post:
  *     summary: Handle Voice Call Reports
  *     description: Process voice call callbacks and IVR interactions from Africa's Talking
@@ -317,7 +317,7 @@ router.post('/voice', async (req: Request, res: Response): Promise<void> => {
   }
 })/**
  * @swagger
- * /community/report:
+ * /api/community/report:
  *   post:
  *     summary: Submit Mobile App Report
  *     description: Submit conservation report via mobile application with media attachments
@@ -447,7 +447,7 @@ router.post('/report', async (req: Request, res: Response) => {
 
 /**
  * @swagger
- * /community/profile/{phoneNumber}:
+ * /api/community/profile/{phoneNumber}:
  *   get:
  *     summary: Get User Profile and Report History
  *     description: Retrieve user profile with trust score, report history, and airtime earnings
@@ -525,7 +525,7 @@ router.get('/profile/:phoneNumber', async (req: Request, res: Response) => {
 
 /**
  * @swagger
- * /community/airtime-callback:
+ * /api/community/airtime-callback:
  *   post:
  *     summary: Handle Airtime Transaction Callbacks
  *     description: Process airtime delivery status updates from Africa's Talking
