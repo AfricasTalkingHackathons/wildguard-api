@@ -258,27 +258,30 @@ export class ReportProcessingService {
 
   // Calculate airtime reward based on report type and priority
   private static calculateReward(type: string, priority: string): number {
+    // Base rewards (1-3 KES based on report importance)
     const baseRewards = {
-      'poaching': 50,
-      'illegal_logging': 40,
-      'suspicious_activity': 45,
-      'wildlife_sighting': 20,
-      'injury': 35,
-      'fence_breach': 25,
-      'fire': 60,
+      'poaching': 3,          // High value - critical for conservation
+      'fire': 3,              // High value - immediate danger
+      'illegal_logging': 2,   // Medium value - environmental damage  
+      'suspicious_activity': 2, // Medium value - potential threat
+      'injury': 2,            // Medium value - animal welfare
+      'fence_breach': 1,      // Low value - infrastructure issue
+      'wildlife_sighting': 1, // Low value - monitoring data
     }
 
-    const priorityMultipliers = {
-      'low': 1,
-      'medium': 1.5,
-      'high': 2,
-      'urgent': 3,
+    // Priority bonuses (0-2 KES additional)
+    const priorityBonuses = {
+      'low': 0,
+      'medium': 1,
+      'high': 1, 
+      'urgent': 2,
     }
 
-    const baseReward = baseRewards[type as keyof typeof baseRewards] || 20
-    const multiplier = priorityMultipliers[priority as keyof typeof priorityMultipliers] || 1
+    const baseReward = baseRewards[type as keyof typeof baseRewards] || 1
+    const bonus = priorityBonuses[priority as keyof typeof priorityBonuses] || 0
 
-    return Math.round(baseReward * multiplier)
+    // Ensure reward stays within 1-5 KES range
+    return Math.min(5, Math.max(1, baseReward + bonus))
   }
 
   // Award airtime to user
