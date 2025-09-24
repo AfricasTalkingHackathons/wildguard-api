@@ -264,15 +264,17 @@ router.post('/voice', async (req: Request, res: Response): Promise<void> => {
 
     // Handle different voice callback types
     if (callbackData.callSessionState === 'Completed' || callbackData.status === 'Aborted') {
-      // This is a call completion callback
+      // This is a call completion callback - still return XML for AT
       console.log(`Call ${callbackData.status || callbackData.callSessionState} - Duration: ${callbackData.durationInSeconds || 0}s`)
       
-      // Return success response for callback acknowledgment
-      res.json({
-        success: true,
-        message: 'Voice callback processed',
-        sessionId: callbackData.sessionId
-      })
+      // Return simple XML acknowledgment for completion callbacks
+      const completionResponse = `<?xml version="1.0" encoding="UTF-8"?>
+      <Response>
+        <Say voice="woman">Thank you for calling WildGuard. Goodbye.</Say>
+      </Response>`
+      
+      res.set('Content-Type', 'text/xml')
+      res.send(completionResponse)
       return
     }
 

@@ -170,80 +170,71 @@ export class AfricasTalkingService {
 
   // Handle voice call events and recordings
   static async handleVoiceCallback(callbackData: any): Promise<string> {
-    const { sessionId, isActive, dtmfDigits, recordingUrl, callerNumber } = callbackData
+    const { sessionId, isActive, dtmfDigits, recordingUrl, callerNumber, callSessionState } = callbackData
     
-    console.log('Voice callback received:', { sessionId, isActive, dtmfDigits, callerNumber })
+    console.log('Voice callback received:', { sessionId, isActive, dtmfDigits, callerNumber, callSessionState })
 
-    // Build voice XML response based on call state
-    if (isActive === '1') {
-      // Call is active - provide menu options
+    // Handle initial call connection
+    if (isActive === '1' && !dtmfDigits) {
+      // Call is active - provide initial menu
       return `<?xml version="1.0" encoding="UTF-8"?>
-      <Response>
-        <Say voice="woman" language="en-US">
-          Welcome to WildGuard Wildlife Protection Hotline.
-          If this is an emergency, press 1.
-          To report a wildlife sighting, press 2.
-          To speak to a ranger, press 3.
-          To hear this menu again, press 9.
-        </Say>
-        <GetDigits timeout="30" finishOnKey="#" numDigits="1">
-          <Say voice="woman">Please enter your choice followed by the hash key.</Say>
-        </GetDigits>
-        <Say voice="woman">We didn't receive your selection. Goodbye.</Say>
-        <Hangup/>
-      </Response>`
+<Response>
+  <Say voice="woman" language="en-US">Welcome to WildGuard Wildlife Protection Hotline. If this is an emergency, press 1. To report a wildlife sighting, press 2. To speak to a ranger, press 3. To hear this menu again, press 9.</Say>
+  <GetDigits timeout="30" finishOnKey="#" numDigits="1">
+    <Say voice="woman">Please enter your choice followed by the hash key.</Say>
+  </GetDigits>
+  <Say voice="woman">We did not receive your selection. Thank you for calling WildGuard. Goodbye.</Say>
+</Response>`
+
     } else if (dtmfDigits) {
       // Process menu selection
       switch (dtmfDigits) {
         case '1':
           return `<?xml version="1.0" encoding="UTF-8"?>
-          <Response>
-            <Say voice="woman">
-              Emergency report activated. Please describe the situation after the beep.
-              You have 60 seconds to record your message.
-            </Say>
-            <Record timeout="60" trimSilence="true" playBeep="true" finishOnKey="#" />
-            <Say voice="woman">Thank you. Rangers have been alerted and will respond immediately.</Say>
-            <Hangup/>
-          </Response>`
+<Response>
+  <Say voice="woman">Emergency report activated. Please describe the situation after the beep. You have 60 seconds to record your message.</Say>
+  <Record timeout="60" trimSilence="true" playBeep="true" finishOnKey="#" />
+  <Say voice="woman">Thank you. Rangers have been alerted and will respond immediately.</Say>
+</Response>`
         
         case '2':
           return `<?xml version="1.0" encoding="UTF-8"?>
-          <Response>
-            <Say voice="woman">
-              Wildlife sighting report. Please describe what you saw after the beep.
-              Include the animal type, number, and location.
-            </Say>
-            <Record timeout="60" trimSilence="true" playBeep="true" finishOnKey="#" />
-            <Say voice="woman">Thank you for your wildlife report. You may earn airtime if verified.</Say>
-            <Hangup/>
-          </Response>`
+<Response>
+  <Say voice="woman">Wildlife sighting report. Please describe what you saw after the beep. Include the animal type, number, and location.</Say>
+  <Record timeout="60" trimSilence="true" playBeep="true" finishOnKey="#" />
+  <Say voice="woman">Thank you for your wildlife report. You may earn airtime if verified.</Say>
+</Response>`
         
         case '3':
           return `<?xml version="1.0" encoding="UTF-8"?>
-          <Response>
-            <Say voice="woman">
-              Connecting you to the ranger station. Please hold.
-            </Say>
-            <Dial phoneNumbers="+254700000000" record="true" maxDuration="300" />
-            <Say voice="woman">Unable to connect. Please try again later.</Say>
-            <Hangup/>
-          </Response>`
+<Response>
+  <Say voice="woman">Connecting you to the ranger station. Please hold.</Say>
+  <Dial phoneNumbers="+254700000000" record="true" maxDuration="300" />
+  <Say voice="woman">Unable to connect. Please try again later.</Say>
+</Response>`
+        
+        case '9':
+          return `<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Say voice="woman">WildGuard menu. If this is an emergency, press 1. To report a wildlife sighting, press 2. To speak to a ranger, press 3.</Say>
+  <GetDigits timeout="30" finishOnKey="#" numDigits="1">
+    <Say voice="woman">Please enter your choice followed by the hash key.</Say>
+  </GetDigits>
+  <Say voice="woman">Thank you for calling WildGuard. Goodbye.</Say>
+</Response>`
         
         default:
           return `<?xml version="1.0" encoding="UTF-8"?>
-          <Response>
-            <Say voice="woman">Invalid selection. Please call back and try again.</Say>
-            <Hangup/>
-          </Response>`
+<Response>
+  <Say voice="woman">Invalid selection. Please call back and try again. Thank you for calling WildGuard.</Say>
+</Response>`
       }
     } else {
       // Call ended or other event
       return `<?xml version="1.0" encoding="UTF-8"?>
-      <Response>
-        <Say voice="woman">Thank you for calling WildGuard. Goodbye.</Say>
-        <Hangup/>
-      </Response>`
+<Response>
+  <Say voice="woman">Thank you for calling WildGuard. Goodbye.</Say>
+</Response>`
     }
   }
 
