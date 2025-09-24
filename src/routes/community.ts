@@ -218,6 +218,12 @@ router.post('/sms', async (req: Request, res: Response) => {
   try {
     const { from, text, to, id, linkId, date } = req.body
 
+    // Add validation for required fields
+    if (!from || !text) {
+      console.log('SMS received with missing fields:', { from, text, to, id })
+      return res.status(400).json({ error: 'Missing required fields: from and text' })
+    }
+
     console.log(`SMS received from ${from}: ${text}`)
 
     // Parse SMS for report information
@@ -237,11 +243,11 @@ router.post('/sms', async (req: Request, res: Response) => {
       })
     }
 
-    res.json({ success: true })
+    return res.json({ success: true })
     
   } catch (error) {
     console.error('SMS handling error:', error)
-    res.status(500).json({ error: 'Failed to process SMS' })
+    return res.status(500).json({ error: 'Failed to process SMS' })
   }
 })
 
@@ -710,6 +716,11 @@ function mapUSSDToReportType(mainMenu: string, subMenu: string): ReportType {
 
 // Helper method to parse SMS reports
 function parseSMSReport(phoneNumber: string, text: string) {
+  // Add null/undefined checks
+  if (!text || typeof text !== 'string') {
+    return null
+  }
+  
   const upperText = text.toUpperCase()
   
   // Check if it's a report format
