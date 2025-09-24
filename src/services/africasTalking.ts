@@ -762,39 +762,39 @@ You're a conservation hero!`
             data: { ...session.data, balance: 45 } 
           })
           return `CON Request Airtime
-Available Balance: 45 KES
+Available Balance: 3 KES
 
 Choose amount:
-1. 5 KES
-2. 10 KES  
-3. 20 KES
-4. All Balance (45 KES)
+1. 1 KES
+2. 2 KES  
+3. 3 KES
+4. All Balance (3 KES)
 5. Custom Amount
 0. Back to Menu`
 
         case '2':
           return `END Earning History
 This Month (September):
-- Wildlife Sighting: 15 KES
-- Emergency Report: 10 KES
+- Wildlife Sighting: 3 KES
+- Emergency Report: 2 KES
 
 Last Month (August):  
-- Wildlife Sightings: 25 KES
-- Poaching Alert: 20 KES
-- Photo Bonus: 5 KES
+- Wildlife Sightings: 5 KES
+- Poaching Alert: 3 KES
+- Photo Bonus: 0 KES
 
-Total Lifetime: 180 KES
-Average per Report: 7.8 KES`
+Total Lifetime: 13 KES
+Average per Report: 1.6 KES`
 
         case '3':
           return `END How to Earn More
 Airtime Rewards:
-- Wildlife Sighting: 2-5 KES
-- Emergency Report: 8-15 KES  
-- Poaching Alert: 15-25 KES
-- High Quality Photos: +2 KES
-- GPS Location: +1 KES
-- Quick Response: +3 KES
+- Wildlife Sighting: 1 KES
+- Emergency Report: 2-3 KES  
+- Poaching Alert: 3 KES
+- High Quality Photos: +0 KES
+- GPS Location: +0 KES
+- Quick Response: +0 KES
 
 Tips to Maximize:
 1. Include photos
@@ -807,7 +807,7 @@ Tips to Maximize:
       }
     } else if (parts.length === 3) {
       // Handle airtime request amounts
-      const amounts = { '1': 5, '2': 10, '3': 20, '4': 45 }
+      const amounts = { '1': 1, '2': 2, '3': 3, '4': 3 }
       const amount = amounts[parts[2] as keyof typeof amounts]
       
       if (amount) {
@@ -826,14 +826,14 @@ Thank you for protecting wildlife!
 - WildGuard Team`
       } else if (parts[2] === '5') {
         return `CON Custom Amount
-Enter amount (1-45 KES):
-Available Balance: 45 KES`
+Enter amount (1-3 KES):
+Available Balance: 3 KES`
       }
     } else if (parts.length === 4 && parts[2] === '5') {
       // Custom amount entered
       const customAmount = parseInt(parts[3])
       
-      if (customAmount >= 1 && customAmount <= 45) {
+      if (customAmount >= 1 && customAmount <= 3) {
         this.processAirtimeReward(phoneNumber, customAmount)
         
         ussdSessions.delete(sessionId)
@@ -847,7 +847,7 @@ SMS confirmation will follow.
 Keep protecting our wildlife!`
       } else {
         return `END Invalid amount. 
-Please enter 1-45 KES.`
+Please enter 1-3 KES.`
       }
     }
     

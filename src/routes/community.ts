@@ -570,7 +570,7 @@ router.get('/profile/:phoneNumber', async (req: Request, res: Response) => {
       trustScore: 85, // Would come from database
       totalReports: userReports.length,
       verifiedReports: userReports.filter((r: any) => r.verificationStatus === 'verified').length,
-      airtimeEarned: 350, // Would come from database
+      airtimeEarned: 25, // Would come from database (updated to reasonable amount)
       recentReports: userReports.slice(0, 5),
     }
 
@@ -755,23 +755,23 @@ type ReportMethod = 'sms' | 'ussd' | 'voice' | 'app'
 // Calculate airtime reward based on report type and priority
 function calculateAirtimeReward(reportType: ReportType, priority: ReportPriority): number {
   const baseRewards = {
-    'poaching': 20,           // High reward for poaching reports
-    'fire': 15,              // High reward for fire reports
-    'injury': 12,            // Medium-high for injured animals
-    'suspicious_activity': 8, // Medium reward
-    'illegal_logging': 10,    // Medium reward
-    'fence_breach': 6,        // Lower reward
-    'wildlife_sighting': 5    // Base reward for sightings
+    'poaching': 3,           // High reward for poaching reports (3 KES)
+    'fire': 3,              // High reward for fire reports (3 KES)
+    'injury': 2,            // Medium reward for injured animals (2 KES)
+    'suspicious_activity': 2, // Medium reward (2 KES)
+    'illegal_logging': 2,    // Medium reward (2 KES)
+    'fence_breach': 1,        // Lower reward (1 KES)
+    'wildlife_sighting': 1    // Base reward for sightings (1 KES)
   }
   
   const priorityMultipliers = {
-    'urgent': 1.5,   // 50% bonus for urgent reports
-    'high': 1.2,     // 20% bonus for high priority
-    'medium': 1.0,   // No bonus for medium
-    'low': 0.8       // 20% less for low priority
+    'urgent': 1.0,   // No multiplier - keep base amounts
+    'high': 1.0,     // No multiplier - keep base amounts  
+    'medium': 1.0,   // No multiplier - keep base amounts
+    'low': 1.0       // No multiplier - keep base amounts
   }
   
-  const baseReward = baseRewards[reportType] || 5
+  const baseReward = baseRewards[reportType] || 1
   const multiplier = priorityMultipliers[priority] || 1.0
   
   return Math.round(baseReward * multiplier)
