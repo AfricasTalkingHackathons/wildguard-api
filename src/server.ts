@@ -96,6 +96,57 @@ app.get('/api/openapi.json', (req: Request, res: Response) => {
   res.send(swaggerSpec)
 })
 
+// Root endpoint - Welcome page
+app.get('/', (req: Request, res: Response) => {
+  res.json({
+    service: 'WildGuard Conservation API',
+    version: '1.0.0',
+    status: 'running',
+    description: 'Unified conservation intelligence platform for Africa',
+    documentation: {
+      interactive: `${req.protocol}://${req.get('host')}/docs`,
+      openapi_spec: `${req.protocol}://${req.get('host')}/api/openapi.json`,
+    },
+    endpoints: {
+      health: '/health',
+      stats: '/api/stats',
+      community: {
+        ussd: '/api/community/ussd',
+        sms: '/api/community/sms',
+        voice: '/api/community/voice',
+        reports: '/api/community/report',
+        profile: '/api/community/profile/:phoneNumber',
+      },
+      rangers: {
+        dashboard: '/api/rangers/dashboard',
+        reports: '/api/rangers/reports',
+        verification: '/api/rangers/reports/:reportId/verify',
+        threats: '/api/rangers/threats',
+      },
+      sensors: {
+        data: '/api/sensors/data',
+        register: '/api/sensors/register',
+        status: '/api/sensors/status/:sensorId',
+        network: '/api/sensors/network',
+      },
+    },
+    features: [
+      'Community Reporting (SMS/USSD/Voice/Mobile)',
+      'Threat Analysis & Prediction',
+      'Ranger Dashboard & Verification',
+      'IoT Sensor Network Integration',
+      'Trust Scoring & Airtime Rewards',
+      'Real-time Alerts',
+      'Africa\'s Talking Integration',
+    ],
+    support: {
+      github: 'https://github.com/AfricasTalkingHackathons/wildguard-api',
+      documentation: `${req.protocol}://${req.get('host')}/docs`,
+    },
+    timestamp: new Date().toISOString(),
+  })
+})
+
 // Error handling middleware
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   console.error('Error:', err)
