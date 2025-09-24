@@ -1,791 +1,1578 @@
-# 🌿 WildGuard API Documentation
+# 🌿 WildGuard Conservation API Documentation# 🌿 WildGuard API Documentation
 
-**Version:** 1.0.0  
-**Base URL:** `http://localhost:3000` (Development) | `https://api.wildguard.conservation` (Production)  
-**Last Updated:** September 23, 2025
 
-## 📋 Table of Contents
 
-1. [Authentication](#authentication)
+**Live API Base URL:** `https://wildguard-api-gubr.onrender.com`  **Version:** 1.0.0  
+
+**Version:** 1.0.0  **Base URL:** `http://localhost:3000` (Development) | `https://api.wildguard.conservation` (Production)  
+
+**Interactive Documentation:** `https://wildguard-api-gubr.onrender.com/api/docs`**Last Updated:** September 23, 2025
+
+
+
+---## 📋 Table of Contents
+
+
+
+## 🚀 Quick Start1. [Authentication](#authentication)
+
 2. [Community API](#community-api)
-3. [Rangers Dashboard API](#rangers-dashboard-api)
-4. [Sensor Network API](#sensor-network-api)
-5. [System API](#system-api)
-6. [Error Handling](#error-handling)
-7. [Rate Limits](#rate-limits)
-8. [WebSocket Events](#websocket-events)
-9. [Code Examples](#code-examples)
 
----
+### Health Check3. [Rangers Dashboard API](#rangers-dashboard-api)
 
-## 🔐 Authentication
+```bash4. [Sensor Network API](#sensor-network-api)
+
+GET /health5. [System API](#system-api)
+
+```6. [Error Handling](#error-handling)
+
+**Response:**7. [Rate Limits](#rate-limits)
+
+```json8. [WebSocket Events](#websocket-events)
+
+{9. [Code Examples](#code-examples)
+
+  "status": "ok",
+
+  "timestamp": "2025-09-24T09:03:01.128Z",---
+
+  "database": "connected"
+
+}## 🔐 Authentication
+
+```
 
 Currently, the API uses phone number-based identification for community members and role-based access for rangers. JWT tokens will be implemented in future versions.
 
-**Headers Required:**
-```
-Content-Type: application/json
-Accept: application/json
-```
-
 ---
 
-## 📱 Community API
+**Headers Required:**
 
-### Submit Wildlife Report
+## 🔐 Authentication```
 
-**Endpoint:** `POST /api/community/report`
+Content-Type: application/json
 
-Submit a wildlife sighting, poaching incident, or other conservation report.
+Most community endpoints are open for SMS/USSD integration. Ranger endpoints require authentication.Accept: application/json
 
-**Request:**
-```json
-{
+```
+
+### Register User
+
+```http---
+
+POST /api/auth/register
+
+Content-Type: application/json## 📱 Community API
+
+
+
+{### Submit Wildlife Report
+
   "phoneNumber": "+254712345678",
-  "type": "poaching",
-  "description": "Saw 3 men with guns near waterhole",
-  "latitude": -2.153456,
-  "longitude": 34.678901,
-  "animalSpecies": "elephant",
-  "estimatedCount": 5,
-  "urgency": "high",
-  "mediaUrls": ["https://example.com/photo1.jpg"],
-  "isAnonymous": false
-}
-```
 
-**Response:**
+  "name": "John Doe", **Endpoint:** `POST /api/community/report`
+
+  "role": "community",
+
+  "location": "Nairobi"Submit a wildlife sighting, poaching incident, or other conservation report.
+
+}
+
+```**Request:**
+
 ```json
-{
-  "success": true,
-  "message": "Report submitted successfully",
-  "reportId": "uuid-here",
-  "report": {
-    "id": "uuid-here",
-    "type": "poaching",
-    "priority": "high",
-    "status": "pending",
-    "reportedAt": "2025-09-23T14:30:00Z",
-    "trustScore": 0.85,
-    "estimatedReward": 50
-  }
+
+### Login{
+
+```http  "phoneNumber": "+254712345678",
+
+POST /api/auth/login  "type": "poaching",
+
+Content-Type: application/json  "description": "Saw 3 men with guns near waterhole",
+
+  "latitude": -2.153456,
+
+{  "longitude": 34.678901,
+
+  "phoneNumber": "+254712345678"  "animalSpecies": "elephant",
+
+}  "estimatedCount": 5,
+
+```  "urgency": "high",
+
+  "mediaUrls": ["https://example.com/photo1.jpg"],
+
+---  "isAnonymous": false
+
 }
-```
 
-**Report Types:**
-- `poaching` - Illegal hunting/wildlife crime
+## 📱 Community Endpoints```
+
+
+
+### 1. USSD Callback (Africa's Talking Integration)**Response:**
+
+```http```json
+
+POST /api/community/ussd{
+
+Content-Type: application/x-www-form-urlencoded  "success": true,
+
+  "message": "Report submitted successfully",
+
+sessionId=session123&serviceCode=*123#&phoneNumber=%2B254712345678&text=1*2*3  "reportId": "uuid-here",
+
+```  "report": {
+
+    "id": "uuid-here",
+
+**USSD Menu Flow:**    "type": "poaching",
+
+1. **Main Menu:** Wildlife Sighting | Illegal Activity | Injured Animal | Profile | Help    "priority": "high",
+
+2. **Sub-menus** for detailed report categorization    "status": "pending",
+
+3. **Automatic Report Creation** when flow completed    "reportedAt": "2025-09-23T14:30:00Z",
+
+4. **SMS Confirmations** sent to reporter    "trustScore": 0.85,
+
+    "estimatedReward": 50
+
+**Response:** Plain text USSD response  }
+
+}
+
+### 2. SMS Webhook (Africa's Talking Integration)  ```
+
+```http
+
+POST /api/community/sms**Report Types:**
+
+Content-Type: application/x-www-form-urlencoded- `poaching` - Illegal hunting/wildlife crime
+
 - `wildlife_sighting` - Animal observation
-- `suspicious_activity` - Unusual behavior in conservation area
-- `injury` - Injured wildlife
-- `illegal_logging` - Forest destruction
-- `fire` - Wildfire incident
-- `fence_breach` - Perimeter security breach
 
-### Get User Profile
+from=%2B254712345678&text=REPORT%20POACHING%20Saw%203%20men%20with%20guns&to=AFTKNG&id=msg123&linkId=link123&date=2025-09-24- `suspicious_activity` - Unusual behavior in conservation area
+
+```- `injury` - Injured wildlife
+
+- `illegal_logging` - Forest destruction
+
+**SMS Report Format:**- `fire` - Wildfire incident
+
+- `REPORT POACHING [description]` - Urgent poaching report- `fence_breach` - Perimeter security breach
+
+- `REPORT SIGHTING [description]` - Wildlife sighting
+
+- `REPORT INJURY [description]` - Injured animal### Get User Profile
+
+- `REPORT FIRE [description]` - Fire emergency
 
 **Endpoint:** `GET /api/community/profile/{phoneNumber}`
 
+**Auto-responses:** Confirmation SMS sent with report ID
+
 Get community member's profile, trust score, and statistics.
 
-**Response:**
-```json
-{
-  "success": true,
-  "profile": {
-    "phoneNumber": "+254712345678",
-    "name": "John Doe",
-    "location": "Maasai Mara",
-    "trustScore": 85.5,
-    "totalReports": 23,
-    "verifiedReports": 19,
-    "airtimeEarned": 1250.00,
-    "rank": "Conservation Hero",
-    "badgeLevel": "Gold",
-    "joinedDate": "2025-01-15T10:00:00Z",
-    "lastActiveAt": "2025-09-23T12:00:00Z"
-  },
-  "recentReports": [
-    {
-      "id": "uuid",
-      "type": "wildlife_sighting",
-      "verificationStatus": "verified",
-      "reportedAt": "2025-09-22T16:45:00Z",
-      "reward": 30.00
-    }
-  ]
-}
-```
+### 3. Voice Callback (Africa's Talking Integration)
 
-### USSD Webhook
+```http  **Response:**
+
+POST /api/community/voice```json
+
+Content-Type: application/x-www-form-urlencoded{
+
+  "success": true,
+
+callerNumber=%2B254712345678&dtmfDigits=1&recordingUrl=https://example.com/recording.wav  "profile": {
+
+```    "phoneNumber": "+254712345678",
+
+    "name": "John Doe",
+
+**Voice Flow:**    "location": "Maasai Mara",
+
+1. **IVR Menu:** Press 1 for Emergency, 2 for Sighting, 3 for Help    "trustScore": 85.5,
+
+2. **Voice Recording:** Leave detailed message after beep    "totalReports": 23,
+
+3. **Auto-transcription** and report creation    "verifiedReports": 19,
+
+4. **SMS Confirmation** with report ID    "airtimeEarned": 1250.00,
+
+    "rank": "Conservation Hero",
+
+### 4. Mobile App Report Submission    "badgeLevel": "Gold",
+
+```http    "joinedDate": "2025-01-15T10:00:00Z",
+
+POST /api/community/report    "lastActiveAt": "2025-09-23T12:00:00Z"
+
+Content-Type: application/json  },
+
+Authorization: Bearer <token>  "recentReports": [
+
+    {
+
+{      "id": "uuid",
+
+  "phoneNumber": "+254712345678",      "type": "wildlife_sighting",
+
+  "type": "wildlife_sighting",      "verificationStatus": "verified",
+
+  "description": "Herd of elephants crossing the road",      "reportedAt": "2025-09-22T16:45:00Z",
+
+  "latitude": -1.2921,      "reward": 30.00
+
+  "longitude": 36.8219,    }
+
+  "animalSpecies": "African Elephant",   ]
+
+  "estimatedCount": 12,}
+
+  "mediaUrls": ["https://cloudinary.com/photo1.jpg"],```
+
+  "isAnonymous": false
+
+}### USSD Webhook
+
+```
 
 **Endpoint:** `POST /api/community/ussd`
 
-Handles USSD menu interactions (internal use - Africa's Talking webhook).
+**Report Types:**
 
-### SMS Webhook
+- `poaching` - Urgent poaching activityHandles USSD menu interactions (internal use - Africa's Talking webhook).
 
-**Endpoint:** `POST /api/community/sms`
+- `illegal_logging` - Illegal tree cutting  
 
-Processes SMS reports (internal use - Africa's Talking webhook).
+- `wildlife_sighting` - Animal sightings### SMS Webhook
 
-### Voice Webhook
+- `suspicious_activity` - Unusual behavior
 
-**Endpoint:** `POST /api/community/voice`
+- `injury` - Injured animals**Endpoint:** `POST /api/community/sms`
 
-Handles voice call reports (internal use - Africa's Talking webhook).
+- `fence_breach` - Broken barriers
 
----
+- `fire` - Fire emergenciesProcesses SMS reports (internal use - Africa's Talking webhook).
+
+
+
+**Response:**### Voice Webhook
+
+```json
+
+{**Endpoint:** `POST /api/community/voice`
+
+  "success": true,
+
+  "reportId": "50d59a9a-29c5-4f78-b0a6-88a175730b4b",Handles voice call reports (internal use - Africa's Talking webhook).
+
+  "message": "Report submitted successfully. Rangers have been notified."
+
+}---
+
+```
 
 ## 🎯 Rangers Dashboard API
 
-### Dashboard Overview
+### 5. User Profile & Statistics
 
-**Endpoint:** `GET /api/rangers/dashboard`
+```http### Dashboard Overview
 
-Get comprehensive dashboard data for rangers.
+GET /api/community/profile/{phoneNumber}
 
-**Response:**
+```**Endpoint:** `GET /api/rangers/dashboard`
+
+
+
+**Response:**Get comprehensive dashboard data for rangers.
+
 ```json
-{
-  "success": true,
-  "dashboard": {
-    "summary": {
-      "totalReports": 156,
-      "pendingReports": 12,
-      "verifiedToday": 8,
+
+{**Response:**
+
+  "phoneNumber": "+254712345678",```json
+
+  "trustScore": 0.85,{
+
+  "totalReports": 23,  "success": true,
+
+  "verifiedReports": 19,   "dashboard": {
+
+  "airtimeEarned": "350.00",    "summary": {
+
+  "recentReports": [...]      "totalReports": 156,
+
+}      "pendingReports": 12,
+
+```      "verifiedToday": 8,
+
       "activeThreats": 3,
-      "onlineRangers": 5,
-      "sensorAlerts": 2
-    },
-    "recentReports": [
+
+### 6. Airtime Reward Callback      "onlineRangers": 5,
+
+```http      "sensorAlerts": 2
+
+POST /api/community/airtime-callback    },
+
+Content-Type: application/json    "recentReports": [
+
       {
-        "id": "uuid",
-        "type": "poaching",
-        "priority": "urgent",
-        "location": {
-          "latitude": -2.153456,
-          "longitude": 34.678901
-        },
-        "description": "Gunshots heard near River Camp",
+
+{        "id": "uuid",
+
+  "phoneNumber": "+254712345678",        "type": "poaching",
+
+  "amount": "KES 5.00",        "priority": "urgent",
+
+  "status": "Success",        "location": {
+
+  "transactionId": "AT_TXN_123456",          "latitude": -2.153456,
+
+  "requestId": "req_789"          "longitude": 34.678901
+
+}        },
+
+```        "description": "Gunshots heard near River Camp",
+
         "reportedAt": "2025-09-23T13:45:00Z",
-        "reporter": {
+
+---        "reporter": {
+
           "phoneNumber": "+254712345678",
-          "trustScore": 92
+
+## 🎖️ Rangers Dashboard Endpoints          "trustScore": 92
+
         },
-        "distance": "2.3km"
-      }
-    ],
-    "threatPredictions": [
-      {
+
+### 1. Dashboard Overview        "distance": "2.3km"
+
+```http      }
+
+GET /api/rangers/dashboard    ],
+
+Authorization: Bearer <ranger-token>    "threatPredictions": [
+
+```      {
+
         "id": "uuid",
-        "type": "poaching_risk",
-        "riskScore": 0.87,
-        "location": {
-          "latitude": -2.150000,
-          "longitude": 34.680000
-        },
-        "timeWindow": "next_6h",
-        "factors": ["historical_incidents", "night_activity"],
-        "recommendedActions": [
-          {
-            "action": "immediate_patrol",
-            "priority": "urgent"
-          }
-        ]
-      }
-    ],
-    "sensorStatus": {
-      "total": 25,
+
+**Response:**        "type": "poaching_risk",
+
+```json        "riskScore": 0.87,
+
+{        "location": {
+
+  "stats": {          "latitude": -2.150000,
+
+    "totalReports": 156,          "longitude": 34.680000
+
+    "urgentReports": 12,        },
+
+    "pendingVerifications": 8,        "timeWindow": "next_6h",
+
+    "verifiedToday": 15        "factors": ["historical_incidents", "night_activity"],
+
+  },        "recommendedActions": [
+
+  "recentReports": [...],          {
+
+  "threatSummary": {            "action": "immediate_patrol",
+
+    "currentRiskLevel": "medium",            "priority": "urgent"
+
+    "activeThreats": 3,          }
+
+    "predictions": [...]        ]
+
+  },      }
+
+  "pendingReports": [...]    ],
+
+}    "sensorStatus": {
+
+```      "total": 25,
+
       "online": 23,
-      "alerting": 2,
-      "lowBattery": 1
-    }
-  }
-}
+
+### 2. Reports Management      "alerting": 2,
+
+```http      "lowBattery": 1
+
+GET /api/rangers/reports?status=pending&type=poaching&limit=20&page=1    }
+
+Authorization: Bearer <ranger-token>  }
+
+```}
+
 ```
 
-### List Reports
-
-**Endpoint:** `GET /api/rangers/reports`
-
-Get filtered list of conservation reports.
-
 **Query Parameters:**
-- `status` - Filter by verification status (`pending`, `verified`, `rejected`, `investigating`)
-- `type` - Filter by report type
-- `priority` - Filter by priority level
-- `limit` - Number of results (default: 50)
+
+- `status`: pending | verified | rejected | investigating### List Reports
+
+- `type`: poaching | wildlife_sighting | injury | fire | etc.
+
+- `area`: conservation area filter**Endpoint:** `GET /api/rangers/reports`
+
+- `startDate` / `endDate`: Date range filtering
+
+- `limit` / `page`: PaginationGet filtered list of conservation reports.
+
+
+
+### 3. Report Verification**Query Parameters:**
+
+```http- `status` - Filter by verification status (`pending`, `verified`, `rejected`, `investigating`)
+
+POST /api/rangers/reports/{reportId}/verify- `type` - Filter by report type
+
+Content-Type: application/json- `priority` - Filter by priority level
+
+Authorization: Bearer <ranger-token>- `limit` - Number of results (default: 50)
+
 - `offset` - Pagination offset
-- `dateFrom` - Start date (ISO 8601)
-- `dateTo` - End date (ISO 8601)
-- `location` - Filter by area/GPS bounds
 
-**Example:** `GET /api/rangers/reports?status=pending&priority=high&limit=20`
+{- `dateFrom` - Start date (ISO 8601)
+
+  "isVerified": true,- `dateTo` - End date (ISO 8601)
+
+  "notes": "Confirmed via drone patrol",- `location` - Filter by area/GPS bounds
+
+  "rangerId": "ranger-uuid-123"
+
+}**Example:** `GET /api/rangers/reports?status=pending&priority=high&limit=20`
+
+```
 
 **Response:**
-```json
-{
-  "success": true,
-  "reports": [
-    {
+
+### 4. Threat Analysis```json
+
+```http{
+
+POST /api/rangers/threats/analyze  "success": true,
+
+Content-Type: application/json  "reports": [
+
+Authorization: Bearer <ranger-token>    {
+
       "id": "uuid",
-      "type": "poaching",
-      "priority": "high",
-      "description": "Multiple gunshots at dawn",
-      "location": {
-        "latitude": -2.153456,
-        "longitude": 34.678901
+
+{      "type": "poaching",
+
+  "lat": -1.2921,      "priority": "high",
+
+  "lng": 36.8219,      "description": "Multiple gunshots at dawn",
+
+  "reportType": "poaching"      "location": {
+
+}        "latitude": -2.153456,
+
+```        "longitude": 34.678901
+
       },
-      "reporter": {
-        "phoneNumber": "+254712345678",
-        "trustScore": 88,
-        "name": "Anonymous"
-      },
-      "verificationStatus": "pending",
-      "reportedAt": "2025-09-23T06:15:00Z",
-      "mediaUrls": ["https://example.com/audio1.mp3"],
-      "threatAnalysis": {
-        "riskScore": 0.91,
-        "confidence": 0.85,
+
+**Response:**      "reporter": {
+
+```json        "phoneNumber": "+254712345678",
+
+{        "trustScore": 88,
+
+  "analysis": {        "name": "Anonymous"
+
+    "riskScore": 0.78,      },
+
+    "threatLevel": "high",      "verificationStatus": "pending",
+
+    "factors": ["High poaching history", "Remote location"],      "reportedAt": "2025-09-23T06:15:00Z",
+
+    "recommendations": ["Increase patrols", "Install camera trap"]      "mediaUrls": ["https://example.com/audio1.mp3"],
+
+  }      "threatAnalysis": {
+
+}        "riskScore": 0.91,
+
+```        "confidence": 0.85,
+
         "patterns": ["night_activity", "escalating_threat"]
-      }
-    }
-  ],
-  "pagination": {
-    "total": 156,
-    "limit": 20,
+
+### 5. Real-time Alert Stream      }
+
+```http      }
+
+GET /api/rangers/alerts/stream  ],
+
+Authorization: Bearer <ranger-token>  "pagination": {
+
+Accept: text/event-stream    "total": 156,
+
+```    "limit": 20,
+
     "offset": 0,
-    "hasMore": true
-  }
-}
+
+**Server-Sent Events:**    "hasMore": true
+
+```  }
+
+data: {"type":"urgent_reports","data":[...],"timestamp":"..."}}
+
 ```
 
-### Verify Report
+data: {"type":"threat_alert","data":{"level":"high",...},"timestamp":"..."}
 
-**Endpoint:** `POST /api/rangers/reports/{reportId}/verify`
+```### Verify Report
 
-Verify or reject a community report.
 
-**Request:**
+
+### 6. Conservation Analytics**Endpoint:** `POST /api/rangers/reports/{reportId}/verify`
+
+```http
+
+GET /api/rangers/analytics?timeframe=30dVerify or reject a community report.
+
+Authorization: Bearer <ranger-token>
+
+```**Request:**
+
 ```json
-{
-  "action": "verify",
-  "notes": "Confirmed by patrol team. Evidence collected.",
-  "rewardAmount": 75.00,
-  "followUpRequired": false
-}
-```
 
-**Actions:**
-- `verify` - Confirm report is accurate
-- `reject` - Report is false/spam
-- `investigate` - Needs further investigation
+**Response:**{
 
-**Response:**
-```json
-{
-  "success": true,
-  "message": "Report verified successfully",
-  "report": {
-    "id": "uuid",
-    "verificationStatus": "verified",
-    "verifiedAt": "2025-09-23T14:30:00Z",
-    "verifiedBy": "ranger-uuid",
-    "reward": {
+```json  "action": "verify",
+
+{  "notes": "Confirmed by patrol team. Evidence collected.",
+
+  "timeframe": "30d",  "rewardAmount": 75.00,
+
+  "summary": {  "followUpRequired": false
+
+    "totalReports": 45,}
+
+    "verifiedReports": 38,```
+
+    "poachingIncidents": 8,
+
+    "wildlifeSightings": 25**Actions:**
+
+  },- `verify` - Confirm report is accurate
+
+  "trends": {- `reject` - Report is false/spam
+
+    "reportsByType": {"poaching": 8, "sighting": 25},- `investigate` - Needs further investigation
+
+    "reportsByDay": {"2025-09-20": 3, "2025-09-21": 5},
+
+    "hotspots": [{"lat": -1.29, "lng": 36.82, "count": 12}]**Response:**
+
+  },```json
+
+  "insights": [{
+
+    {  "success": true,
+
+      "type": "alert",   "message": "Report verified successfully",
+
+      "message": "High poaching activity detected: 8 incidents",  "report": {
+
+      "recommendation": "Increase ranger patrols in affected areas"    "id": "uuid",
+
+    }    "verificationStatus": "verified",
+
+  ]    "verifiedAt": "2025-09-23T14:30:00Z",
+
+}    "verifiedBy": "ranger-uuid",
+
+```    "reward": {
+
       "amount": 75.00,
-      "status": "pending",
-      "transactionId": "at-transaction-id"
-    }
-  }
-}
+
+### 7. Patrol Management      "status": "pending",
+
+```http      "transactionId": "at-transaction-id"
+
+GET /api/rangers/patrols    }
+
+Authorization: Bearer <ranger-token>  }
+
+```}
+
 ```
 
-### Get Threat Predictions
-
-**Endpoint:** `GET /api/rangers/threats`
-
-Get current AI-generated threat predictions.
-
-**Query Parameters:**
-- `riskLevel` - Filter by risk level (`low`, `medium`, `high`)
-- `type` - Threat type (`poaching_risk`, `fire_risk`, `human_activity`)
-- `radius` - Search radius in km
-- `lat`, `lng` - Center coordinates for radius search
-
 **Response:**
-```json
-{
-  "success": true,
+
+```json### Get Threat Predictions
+
+[
+
+  {**Endpoint:** `GET /api/rangers/threats`
+
+    "id": "1",
+
+    "name": "Morning Perimeter Check",Get current AI-generated threat predictions.
+
+    "status": "active",
+
+    "leadRanger": "John Kamau",**Query Parameters:**
+
+    "area": "North Sector",- `riskLevel` - Filter by risk level (`low`, `medium`, `high`)
+
+    "startTime": "2025-09-24T06:00:00Z",- `type` - Threat type (`poaching_risk`, `fire_risk`, `human_activity`)
+
+    "waypoints": [- `radius` - Search radius in km
+
+      {"lat": -1.2921, "lng": 36.8219},- `lat`, `lng` - Center coordinates for radius search
+
+      {"lat": -1.2925, "lng": 36.8225}
+
+    ]**Response:**
+
+  }```json
+
+]{
+
+```  "success": true,
+
   "threats": [
-    {
+
+---    {
+
       "id": "uuid",
-      "type": "poaching_risk",
+
+## 📡 IoT Sensors & Night Guard      "type": "poaching_risk",
+
       "riskScore": 0.89,
-      "confidence": 0.92,
-      "location": {
-        "latitude": -2.155000,
-        "longitude": 34.675000
+
+### 1. Submit Sensor Data      "confidence": 0.92,
+
+```http      "location": {
+
+POST /api/sensors/data        "latitude": -2.155000,
+
+Content-Type: application/json        "longitude": 34.675000
+
       },
-      "timeWindow": "next_12h",
-      "validFrom": "2025-09-23T20:00:00Z",
-      "validTo": "2025-09-24T08:00:00Z",
-      "factors": {
-        "historicalIncidents": 5,
-        "timePatterns": ["night_activity", "weekend_activity"],
-        "recentActivity": 2,
-        "sensorAlerts": 1
-      },
-      "recommendedActions": [
-        {
-          "action": "night_surveillance",
-          "priority": "high",
-          "description": "Increase night-time monitoring in this area"
+
+{      "timeWindow": "next_12h",
+
+  "sensorId": "sensor-uuid-123",      "validFrom": "2025-09-23T20:00:00Z",
+
+  "dataType": "image",      "validTo": "2025-09-24T08:00:00Z",
+
+  "value": {      "factors": {
+
+    "imageUrl": "https://s3.amazonaws.com/camera-trap-123.jpg",        "historicalIncidents": 5,
+
+    "detections": ["elephant", "human"]        "timePatterns": ["night_activity", "weekend_activity"],
+
+  },        "recentActivity": 2,
+
+  "metadata": {        "sensorAlerts": 1
+
+    "temperature": 28.5,      },
+
+    "batteryLevel": 85      "recommendedActions": [
+
+  },        {
+
+  "timestamp": "2025-09-24T09:00:00Z"          "action": "night_surveillance",
+
+}          "priority": "high",
+
+```          "description": "Increase night-time monitoring in this area"
+
         },
-        {
+
+**Data Types:** image | audio | movement | temperature | humidity | gps        {
+
           "action": "community_alert", 
-          "priority": "medium",
-          "description": "Alert local community leaders"
-        }
-      ]
+
+### 2. Register New Sensor          "priority": "medium",
+
+```http          "description": "Alert local community leaders"
+
+POST /api/sensors/register        }
+
+Content-Type: application/json      ]
+
     }
-  ]
-}
-```
 
-### Analyze Location Threats
+{  ]
 
-**Endpoint:** `POST /api/rangers/threats/analyze`
+  "deviceId": "CAMERA_TRAP_001",}
 
-Analyze threat level at specific location.
+  "name": "North Waterhole Camera",```
 
-**Request:**
-```json
-{
+  "type": "camera_trap",
+
+  "latitude": -1.2921,### Analyze Location Threats
+
+  "longitude": 36.8219,
+
+  "conservationAreaId": "area-uuid-123",**Endpoint:** `POST /api/rangers/threats/analyze`
+
+  "configuration": {
+
+    "sensitivity": "high",Analyze threat level at specific location.
+
+    "recordingDuration": 30
+
+  }**Request:**
+
+}```json
+
+```{
+
   "latitude": -2.153456,
-  "longitude": 34.678901,
+
+**Sensor Types:** camera_trap | motion_sensor | acoustic_sensor | gps_collar | weather_station  "longitude": 34.678901,
+
   "reportType": "poaching"
-}
+
+### 3. Sensor Status & Health}
+
+```http```
+
+GET /api/sensors/status/{sensorId}
+
+```**Response:**
+
+```json
+
+**Response:**{
+
+```json  "success": true,
+
+{  "analysis": {
+
+  "sensor": {    "location": {
+
+    "id": "sensor-uuid-123",      "latitude": -2.153456,
+
+    "name": "North Waterhole Camera",      "longitude": 34.678901
+
+    "type": "camera_trap",    },
+
+    "location": {"latitude": -1.2921, "longitude": 36.8219},    "riskScore": 0.76,
+
+    "status": "active",    "riskLevel": "high",
+
+    "batteryLevel": 85,    "confidence": 0.88,
+
+    "lastDataReceived": "2025-09-24T08:45:00Z"    "factors": {
+
+  },      "historicalIncidents": 3,
+
+  "statistics": {      "recentActivity": 1,
+
+    "totalReadingsToday": 45,      "timeOfDay": "high",
+
+    "threatDetections": 3,      "season": "medium",
+
+    "averageConfidence": 0.78      "proximity": "road"
+
+  },    },
+
+  "recentData": [...]    "patterns": ["night_activity", "escalating_threat"],
+
+}    "recommendations": [
+
+```      "Immediate patrol dispatch recommended",
+
+      "Consider deploying additional sensors",
+
+### 4. Night Guard Alerts      "Alert community in 2km radius"
+
+```http    ]
+
+GET /api/sensors/alerts?hours=24  }
+
+```}
+
 ```
 
 **Response:**
-```json
+
+```json### Real-time Alerts Stream
+
 {
-  "success": true,
-  "analysis": {
-    "location": {
-      "latitude": -2.153456,
-      "longitude": 34.678901
-    },
-    "riskScore": 0.76,
-    "riskLevel": "high",
-    "confidence": 0.88,
-    "factors": {
-      "historicalIncidents": 3,
-      "recentActivity": 1,
-      "timeOfDay": "high",
-      "season": "medium",
-      "proximity": "road"
-    },
-    "patterns": ["night_activity", "escalating_threat"],
-    "recommendations": [
-      "Immediate patrol dispatch recommended",
-      "Consider deploying additional sensors",
-      "Alert community in 2km radius"
-    ]
-  }
-}
+
+  "summary": {**Endpoint:** `GET /api/rangers/alerts/stream`
+
+    "totalAlerts": 15,
+
+    "highPriorityAlerts": 3,Server-Sent Events stream for real-time alerts.
+
+    "timeRange": "24 hours",
+
+    "mostActiveHours": ["22:00-02:00", "04:00-06:00"]**Response Stream:**
+
+  },```
+
+  "alerts": [data: {"type":"new_report","priority":"urgent","reportId":"uuid","location":{"lat":-2.153,"lng":34.678}}
+
+    {
+
+      "id": "alert-123",data: {"type":"threat_detected","threatLevel":"high","sensorId":"sensor-uuid","confidence":0.91}
+
+      "sensorId": "sensor-uuid-123", 
+
+      "threatLevel": "high",data: {"type":"verification_needed","reportId":"uuid","trustScore":0.95}
+
+      "description": "Human activity detected in restricted area",```
+
+      "timestamp": "2025-09-24T02:30:00Z",
+
+      "location": {"lat": -1.29, "lng": 36.82},### Analytics
+
+      "confidence": 0.89
+
+    }**Endpoint:** `GET /api/rangers/analytics`
+
+  ]
+
+}Get conservation analytics and statistics.
+
 ```
-
-### Real-time Alerts Stream
-
-**Endpoint:** `GET /api/rangers/alerts/stream`
-
-Server-Sent Events stream for real-time alerts.
-
-**Response Stream:**
-```
-data: {"type":"new_report","priority":"urgent","reportId":"uuid","location":{"lat":-2.153,"lng":34.678}}
-
-data: {"type":"threat_detected","threatLevel":"high","sensorId":"sensor-uuid","confidence":0.91}
-
-data: {"type":"verification_needed","reportId":"uuid","trustScore":0.95}
-```
-
-### Analytics
-
-**Endpoint:** `GET /api/rangers/analytics`
-
-Get conservation analytics and statistics.
 
 **Query Parameters:**
-- `period` - Time period (`7d`, `30d`, `90d`, `1y`)
-- `type` - Analytics type (`incidents`, `community`, `sensors`, `threats`)
 
-**Response:**
+### 5. Sensor Network Overview- `period` - Time period (`7d`, `30d`, `90d`, `1y`)
+
+```http- `type` - Analytics type (`incidents`, `community`, `sensors`, `threats`)
+
+GET /api/sensors/network
+
+```**Response:**
+
 ```json
-{
-  "success": true,
-  "analytics": {
-    "period": "30d",
-    "summary": {
-      "totalIncidents": 45,
-      "resolved": 38,
-      "prevented": 12,
-      "communityEngagement": 89.5,
-      "responseTime": "18min",
-      "successRate": 84.4
-    },
-    "trends": {
-      "incidentsByType": {
-        "poaching": 15,
-        "wildlife_sighting": 20,
-        "suspicious_activity": 8,
-        "injury": 2
-      },
+
+**Response:**{
+
+```json  "success": true,
+
+{  "analytics": {
+
+  "overview": {    "period": "30d",
+
+    "totalSensors": 25,    "summary": {
+
+    "activeSensors": 23,      "totalIncidents": 45,
+
+    "onlineSensors": 20,      "resolved": 38,
+
+    "sensorsWithThreats": 5,      "prevented": 12,
+
+    "totalThreatsLast24h": 15,      "communityEngagement": 89.5,
+
+    "averageBatteryLevel": 78.5,      "responseTime": "18min",
+
+    "sensorTypes": {      "successRate": 84.4
+
+      "camera_trap": 15,    },
+
+      "motion_sensor": 8,    "trends": {
+
+      "acoustic_sensor": 2      "incidentsByType": {
+
+    }        "poaching": 15,
+
+  },        "wildlife_sighting": 20,
+
+  "sensors": [...]        "suspicious_activity": 8,
+
+}        "injury": 2
+
+```      },
+
       "timePatterns": {
-        "peak_hours": ["22:00", "23:00", "02:00", "05:00"],
-        "peak_days": ["Friday", "Saturday", "Sunday"]
-      },
-      "hotspots": [
+
+### 6. Sensor Maintenance        "peak_hours": ["22:00", "23:00", "02:00", "05:00"],
+
+```http        "peak_days": ["Friday", "Saturday", "Sunday"]
+
+POST /api/sensors/{sensorId}/maintenance      },
+
+Content-Type: application/json      "hotspots": [
+
         {
-          "area": "Water Hole 3",
-          "incidents": 8,
-          "riskIncrease": 45.2
-        }
-      ]
-    },
+
+{          "area": "Water Hole 3",
+
+  "status": "maintenance",          "incidents": 8,
+
+  "batteryLevel": 45,          "riskIncrease": 45.2
+
+  "notes": "Cleaning lens and replacing batteries"        }
+
+}      ]
+
+```    },
+
     "communityStats": {
-      "activeReporters": 156,
+
+---      "activeReporters": 156,
+
       "newMembers": 23,
-      "avgTrustScore": 78.5,
+
+## ⚡ System Endpoints      "avgTrustScore": 78.5,
+
       "airtimePaid": 12450.00
-    }
-  }
-}
-```
 
----
+### 1. API Statistics    }
 
-## 📡 Sensor Network API
+```http  }
 
-### Submit Sensor Data
+GET /api/stats}
 
-**Endpoint:** `POST /api/sensors/data`
+``````
 
-Submit sensor readings for threat analysis (IoT devices).
 
-**Request:**
+
+**Response:**---
+
 ```json
-{
-  "sensorId": "sensor-uuid",
-  "dataType": "image",
-  "value": {
-    "objects": ["person", "vehicle"],
-    "confidence": 0.89,
-    "night_vision": true
-  },
-  "metadata": {
-    "camera_model": "TrailCam Pro",
-    "battery_level": 78,
-    "temperature": 24.5
-  },
-  "timestamp": "2025-09-23T02:15:00Z"
-}
-```
 
-**Data Types:**
+{## 📡 Sensor Network API
+
+  "api": {
+
+    "version": "1.0.0",### Submit Sensor Data
+
+    "uptime": "15 days",
+
+    "requestsToday": 1247**Endpoint:** `POST /api/sensors/data`
+
+  },
+
+  "conservation": {Submit sensor readings for threat analysis (IoT devices).
+
+    "totalReports": 2847,
+
+    "activeSensors": 23,**Request:**
+
+    "registeredUsers": 156```json
+
+  },{
+
+  "africasTalking": {  "sensorId": "sensor-uuid",
+
+    "smssSentToday": 45,  "dataType": "image",
+
+    "airtimeDistributed": "KES 450.00"  "value": {
+
+  }    "objects": ["person", "vehicle"],
+
+}    "confidence": 0.89,
+
+```    "night_vision": true
+
+  },
+
+### 2. Test SMS (Development)  "metadata": {
+
+```http    "camera_model": "TrailCam Pro",
+
+POST /api/test-sms    "battery_level": 78,
+
+Content-Type: application/json    "temperature": 24.5
+
+  },
+
+{  "timestamp": "2025-09-23T02:15:00Z"
+
+  "to": "+254712345678",}
+
+  "message": "Test message"```
+
+}
+
+```**Data Types:**
+
 - `image` - Camera trap photos
-- `audio` - Acoustic sensor recordings  
-- `movement` - Motion sensor data
-- `gps` - GPS collar tracking
-- `temperature` - Weather station data
+
+### 3. Emergency Alert Broadcast- `audio` - Acoustic sensor recordings  
+
+```http- `movement` - Motion sensor data
+
+POST /api/emergency-alert- `gps` - GPS collar tracking
+
+Content-Type: application/json- `temperature` - Weather station data
+
 - `humidity` - Environmental monitoring
 
-**Response:**
-```json
 {
-  "success": true,
-  "message": "Sensor data processed successfully",
-  "sensorId": "sensor-uuid",
+
+  "type": "fire",**Response:**
+
+  "location": "Maasai Mara North",```json
+
+  "severity": "high",{
+
+  "message": "Large wildfire detected. Evacuate wildlife area immediately."  "success": true,
+
+}  "message": "Sensor data processed successfully",
+
+```  "sensorId": "sensor-uuid",
+
   "processed": true,
-  "threatAnalysis": {
-    "threatLevel": "medium",
-    "confidence": 0.89,
-    "alertGenerated": true,
+
+### 4. Process External Sensor Data  "threatAnalysis": {
+
+```http    "threatLevel": "medium",
+
+POST /api/sensor-data    "confidence": 0.89,
+
+Content-Type: application/json    "alertGenerated": true,
+
     "recommendedAction": "Monitor group activity - Consider patrol"
-  }
+
+{  }
+
+  "deviceId": "WEATHER_STATION_001",}
+
+  "data": {```
+
+    "temperature": 28.5,
+
+    "humidity": 65,### Register Sensor
+
+    "windSpeed": 12
+
+  }**Endpoint:** `POST /api/sensors/register`
+
 }
-```
 
-### Register Sensor
+```Register a new IoT sensor device.
 
-**Endpoint:** `POST /api/sensors/register`
 
-Register a new IoT sensor device.
 
-**Request:**
+---**Request:**
+
 ```json
-{
+
+## 📊 Response Formats{
+
   "deviceId": "WILDCAM001",
-  "name": "Water Hole Camera 3",
-  "type": "camera_trap",
-  "latitude": -2.153456,
-  "longitude": 34.678901,
-  "conservationAreaId": "area-uuid",
-  "configuration": {
-    "capture_interval": 300,
-    "night_vision": true,
+
+### Success Response  "name": "Water Hole Camera 3",
+
+```json  "type": "camera_trap",
+
+{  "latitude": -2.153456,
+
+  "success": true,  "longitude": 34.678901,
+
+  "data": {...},  "conservationAreaId": "area-uuid",
+
+  "message": "Operation completed successfully"  "configuration": {
+
+}    "capture_interval": 300,
+
+```    "night_vision": true,
+
     "motion_sensitivity": "high"
-  }
+
+### Error Response  }
+
+```json}
+
+{```
+
+  "success": false,
+
+  "error": "Validation failed",**Sensor Types:**
+
+  "details": {- `camera_trap` - Motion-activated cameras
+
+    "field": "phoneNumber",- `motion_sensor` - Movement detection
+
+    "message": "Invalid phone number format"- `acoustic_sensor` - Sound monitoring
+
+  },- `gps_collar` - Animal tracking
+
+  "code": "VALIDATION_ERROR"- `weather_station` - Environmental data
+
 }
-```
 
-**Sensor Types:**
-- `camera_trap` - Motion-activated cameras
-- `motion_sensor` - Movement detection
-- `acoustic_sensor` - Sound monitoring
-- `gps_collar` - Animal tracking
-- `weather_station` - Environmental data
+```**Response:**
 
-**Response:**
 ```json
-{
-  "success": true,
-  "message": "Sensor registered successfully", 
-  "sensorId": "sensor-uuid",
-  "sensor": {
-    "id": "sensor-uuid",
-    "deviceId": "WILDCAM001",
-    "name": "Water Hole Camera 3",
-    "type": "camera_trap",
-    "location": {
+
+### Common HTTP Status Codes{
+
+- `200` - Success  "success": true,
+
+- `201` - Created    "message": "Sensor registered successfully", 
+
+- `400` - Bad Request (validation error)  "sensorId": "sensor-uuid",
+
+- `401` - Unauthorized  "sensor": {
+
+- `403` - Forbidden    "id": "sensor-uuid",
+
+- `404` - Not Found    "deviceId": "WILDCAM001",
+
+- `409` - Conflict (duplicate resource)    "name": "Water Hole Camera 3",
+
+- `429` - Rate Limited    "type": "camera_trap",
+
+- `500` - Internal Server Error    "location": {
+
       "latitude": -2.153456,
-      "longitude": 34.678901
+
+---      "longitude": 34.678901
+
     },
-    "status": "active"
+
+## 🔄 Real-time Features    "status": "active"
+
   }
-}
-```
 
-### Get Sensor Status
+### WebSocket Placeholder}
 
-**Endpoint:** `GET /api/sensors/status/{sensorId}`
+```http```
 
-Get sensor health and recent activity.
+GET /api/ws
 
-**Response:**
+```### Get Sensor Status
+
+
+
+**Response:****Endpoint:** `GET /api/sensors/status/{sensorId}`
+
 ```json
-{
-  "success": true,
-  "sensor": {
-    "id": "sensor-uuid",
-    "deviceId": "WILDCAM001", 
+
+{Get sensor health and recent activity.
+
+  "message": "WebSocket endpoint - implement with Socket.IO for real-time updates",
+
+  "endpoints": {**Response:**
+
+    "alerts": "/api/rangers/alerts/stream",```json
+
+    "reports": "ws://localhost:3000/reports",{
+
+    "threats": "ws://localhost:3000/threats"  "success": true,
+
+  }  "sensor": {
+
+}    "id": "sensor-uuid",
+
+```    "deviceId": "WILDCAM001", 
+
     "name": "Water Hole Camera 3",
-    "type": "camera_trap",
-    "location": {
-      "latitude": -2.153456,
+
+### Server-Sent Events (Alerts Stream)    "type": "camera_trap",
+
+```javascript    "location": {
+
+const eventSource = new EventSource('/api/rangers/alerts/stream');      "latitude": -2.153456,
+
       "longitude": 34.678901
-    },
-    "status": "active",
-    "batteryLevel": 78,
-    "lastDataReceived": "2025-09-23T14:22:00Z",
+
+eventSource.addEventListener('urgent_reports', (event) => {    },
+
+  const reports = JSON.parse(event.data);    "status": "active",
+
+  // Handle urgent reports    "batteryLevel": 78,
+
+});    "lastDataReceived": "2025-09-23T14:22:00Z",
+
     "installationDate": "2025-08-15T09:00:00Z"
-  },
-  "statistics": {
-    "totalReadingsToday": 45,
-    "threatDetections": 3,
-    "lastReading": "2025-09-23T14:22:00Z",
+
+eventSource.addEventListener('threat_alert', (event) => {  },
+
+  const alert = JSON.parse(event.data);  "statistics": {
+
+  // Handle threat alerts    "totalReadingsToday": 45,
+
+});    "threatDetections": 3,
+
+```    "lastReading": "2025-09-23T14:22:00Z",
+
     "averageConfidence": 0.82
-  },
+
+---  },
+
   "recentData": [
-    {
+
+## 🎯 Integration Examples    {
+
       "id": "data-uuid",
-      "dataType": "image",
-      "threatLevel": "medium",
-      "confidence": "0.89",
-      "recordedAt": "2025-09-23T14:22:00Z",
-      "description": "Human presence detected - Vehicle movement at 14:22"
-    }
-  ]
-}
-```
 
-### Get Night Guard Alerts
+### Frontend JavaScript      "dataType": "image",
 
-**Endpoint:** `GET /api/sensors/alerts`
+```javascript      "threatLevel": "medium",
 
-Get recent automated threat alerts from sensor network.
+// Submit wildlife report      "confidence": "0.89",
 
-**Query Parameters:**
-- `hours` - Time window in hours (default: 24)
+const submitReport = async (reportData) => {      "recordedAt": "2025-09-23T14:22:00Z",
 
-**Response:**
-```json
-{
-  "success": true,
-  "summary": {
+  const response = await fetch('/api/community/report', {      "description": "Human presence detected - Vehicle movement at 14:22"
+
+    method: 'POST',    }
+
+    headers: {  ]
+
+      'Content-Type': 'application/json',}
+
+      'Authorization': `Bearer ${userToken}````
+
+    },
+
+    body: JSON.stringify(reportData)### Get Night Guard Alerts
+
+  });
+
+  **Endpoint:** `GET /api/sensors/alerts`
+
+  return response.json();
+
+};Get recent automated threat alerts from sensor network.
+
+
+
+// Get ranger dashboard**Query Parameters:**
+
+const getDashboard = async (rangerToken) => {- `hours` - Time window in hours (default: 24)
+
+  const response = await fetch('/api/rangers/dashboard', {
+
+    headers: { 'Authorization': `Bearer ${rangerToken}` }**Response:**
+
+  });```json
+
+  {
+
+  return response.json();  "success": true,
+
+};  "summary": {
+
     "totalAlerts": 12,
-    "highThreatAlerts": 2,
-    "mediumThreatAlerts": 7,
-    "timeRange": "24 hours",
-    "topThreats": [
-      {
-        "timestamp": "2025-09-23T02:15:00Z",
-        "location": "Camera Trap 001",
-        "threatLevel": "high",
-        "confidence": "0.91",
-        "description": "Human presence with weapon detected - Vehicle movement at 2:15 AM"
-      }
-    ]
-  }
-}
+
+// Real-time alerts    "highThreatAlerts": 2,
+
+const connectAlerts = (rangerToken) => {    "mediumThreatAlerts": 7,
+
+  const eventSource = new EventSource('/api/rangers/alerts/stream', {    "timeRange": "24 hours",
+
+    headers: { 'Authorization': `Bearer ${rangerToken}` }    "topThreats": [
+
+  });      {
+
+          "timestamp": "2025-09-23T02:15:00Z",
+
+  eventSource.onmessage = (event) => {        "location": "Camera Trap 001",
+
+    const data = JSON.parse(event.data);        "threatLevel": "high",
+
+    if (data.type === 'urgent_reports') {        "confidence": "0.91",
+
+      showUrgentAlert(data.data);        "description": "Human presence with weapon detected - Vehicle movement at 2:15 AM"
+
+    }      }
+
+  };    ]
+
+    }
+
+  return eventSource;}
+
+};```
+
 ```
 
 ### Get Sensor Network Overview
 
-**Endpoint:** `GET /api/sensors/network`
+### Africa's Talking Webhooks
 
-Get complete sensor network status.
+Configure your AT account to send callbacks to:**Endpoint:** `GET /api/sensors/network`
 
-**Response:**
+- **USSD:** `https://wildguard-api-gubr.onrender.com/api/community/ussd`
+
+- **SMS:** `https://wildguard-api-gubr.onrender.com/api/community/sms`  Get complete sensor network status.
+
+- **Voice:** `https://wildguard-api-gubr.onrender.com/api/community/voice`
+
+- **Airtime:** `https://wildguard-api-gubr.onrender.com/api/community/airtime-callback`**Response:**
+
 ```json
-{
-  "success": true,
-  "overview": {
-    "totalSensors": 25,
-    "activeSensors": 23,
-    "onlineSensors": 21,
-    "sensorsWithThreats": 3,
-    "totalThreatsLast24h": 8,
-    "averageBatteryLevel": 76.4,
-    "sensorTypes": {
-      "camera_trap": 15,
-      "acoustic_sensor": 5,
-      "motion_sensor": 3,
-      "gps_collar": 2
-    }
-  },
-  "sensors": [
-    {
-      "id": "sensor-uuid",
-      "deviceId": "WILDCAM001",
-      "name": "Water Hole Camera 3",
+
+### IoT Device Integration{
+
+```javascript  "success": true,
+
+// Send sensor data from camera trap  "overview": {
+
+const sendSensorData = async (sensorId, imageData) => {    "totalSensors": 25,
+
+  await fetch('/api/sensors/data', {    "activeSensors": 23,
+
+    method: 'POST',    "onlineSensors": 21,
+
+    headers: { 'Content-Type': 'application/json' },    "sensorsWithThreats": 3,
+
+    body: JSON.stringify({    "totalThreatsLast24h": 8,
+
+      sensorId,    "averageBatteryLevel": 76.4,
+
+      dataType: 'image',    "sensorTypes": {
+
+      value: {      "camera_trap": 15,
+
+        imageUrl: imageData.url,      "acoustic_sensor": 5,
+
+        detections: imageData.aiDetections      "motion_sensor": 3,
+
+      },      "gps_collar": 2
+
+      metadata: {    }
+
+        batteryLevel: getBatteryLevel(),  },
+
+        temperature: getTemperature()  "sensors": [
+
+      }    {
+
+    })      "id": "sensor-uuid",
+
+  });      "deviceId": "WILDCAM001",
+
+};      "name": "Water Hole Camera 3",
+
       "type": "camera_trap",
-      "location": {
-        "latitude": -2.153456,
-        "longitude": 34.678901
-      },
-      "status": "active",
-      "batteryLevel": 78,
-      "lastDataReceived": "2025-09-23T14:22:00Z",
-      "stats": {
-        "readingsLast24h": 45,
-        "threatsDetected": 2,
-        "isOnline": true
-      }
-    }
-  ]
+
+// Register new sensor device      "location": {
+
+const registerSensor = async (sensorConfig) => {        "latitude": -2.153456,
+
+  const response = await fetch('/api/sensors/register', {        "longitude": 34.678901
+
+    method: 'POST',      },
+
+    headers: { 'Content-Type': 'application/json' },      "status": "active",
+
+    body: JSON.stringify(sensorConfig)      "batteryLevel": 78,
+
+  });      "lastDataReceived": "2025-09-23T14:22:00Z",
+
+        "stats": {
+
+  const result = await response.json();        "readingsLast24h": 45,
+
+  if (result.success) {        "threatsDetected": 2,
+
+    console.log(`Sensor registered: ${result.sensorId}`);        "isOnline": true
+
+  }      }
+
+};    }
+
+```  ]
+
 }
+
+---```
+
+
+
+## 🚨 Key Features### Update Sensor Maintenance
+
+
+
+### 🔄 Automatic Processing**Endpoint:** `POST /api/sensors/{sensorId}/maintenance`
+
+- **Threat Analysis**: AI-powered risk assessment for all reports
+
+- **Ranger Alerts**: SMS notifications for urgent reports  Update sensor maintenance status.
+
+- **Airtime Rewards**: Automatic 1-5 KES rewards for verified reports
+
+- **Trust Scoring**: 0.0-1.0 reliability scores for community reporters**Request:**
+
+```json
+
+### 📱 Multi-Channel Reporting{
+
+- **SMS**: Text "REPORT POACHING [details]" to shortcode  "status": "maintenance",
+
+- **USSD**: Dial *123# for guided menu system  "batteryLevel": 95,
+
+- **Voice**: Call hotline for voice recordings  "notes": "Battery replaced, lens cleaned"
+
+- **Mobile App**: Rich reports with GPS and photos}
+
 ```
 
-### Update Sensor Maintenance
+### 🌙 Night Guard System
 
-**Endpoint:** `POST /api/sensors/{sensorId}/maintenance`
+- **Automated Monitoring**: 24/7 sensor data processing**Response:**
 
-Update sensor maintenance status.
+- **Threat Detection**: AI analysis of camera trap images```json
 
-**Request:**
-```json
-{
-  "status": "maintenance",
-  "batteryLevel": 95,
-  "notes": "Battery replaced, lens cleaned"
-}
-```
+- **Real-time Alerts**: Instant notifications for suspicious activity{
 
-**Response:**
-```json
-{
-  "success": true,
+- **Pattern Analysis**: Historical threat trend analysis  "success": true,
+
   "message": "Sensor maintenance status updated",
-  "sensorId": "sensor-uuid",
-  "updates": {
-    "status": "maintenance",
-    "batteryLevel": 95
-  }
+
+### 📊 Conservation Intelligence    "sensorId": "sensor-uuid",
+
+- **Hotspot Identification**: Geographic clustering of incidents  "updates": {
+
+- **Predictive Analytics**: Risk forecasting for areas    "status": "maintenance",
+
+- **Performance Metrics**: Verification rates and response times    "batteryLevel": 95
+
+- **Species Tracking**: Wildlife population and movement insights  }
+
 }
-```
 
----
+---```
 
-## ⚙️ System API
 
-### Health Check
 
-**Endpoint:** `GET /health`
+## 🛡️ Security & Limits---
 
-Check system health and status.
 
-**Response:**
+
+- **Rate Limiting**: 1000 requests/hour for authenticated users## ⚙️ System API
+
+- **CORS**: Enabled for all origins (development mode)
+
+- **File Uploads**: Max 10MB per file, 10 files/hour### Health Check
+
+- **SMS Costs**: Tracked and monitored via Africa's Talking callbacks
+
+- **Data Privacy**: Anonymous reporting supported for sensitive cases**Endpoint:** `GET /health`
+
+- **Validation**: Zod schema validation for all inputs
+
+- **Error Handling**: Comprehensive error responses with detailsCheck system health and status.
+
+
+
+---**Response:**
+
 ```json
-{
+
+## 📈 Production Status{
+
   "status": "healthy",
-  "timestamp": "2025-09-23T14:30:00Z",
-  "version": "1.0.0",
-  "services": {
-    "database": "connected",
-    "africasTalking": "operational",
-    "redis": "connected",
+
+### ✅ Live Deployment  "timestamp": "2025-09-23T14:30:00Z",
+
+- **URL**: https://wildguard-api-gubr.onrender.com  "version": "1.0.0",
+
+- **Status**: Production Ready  "services": {
+
+- **Health**: `/health` endpoint available    "database": "connected",
+
+- **Uptime**: Auto-scaling on Render cloud    "africasTalking": "operational",
+
+- **Database**: PostgreSQL with connection pooling    "redis": "connected",
+
     "sensors": "monitoring"
-  },
-  "uptime": "15d 8h 23m"
-}
-```
 
-### API Statistics
+### 🔧 Current Capabilities  },
 
-**Endpoint:** `GET /api/stats`
+- **SMS Integration**: Fully operational with sender ID "AFTKNG"  "uptime": "15d 8h 23m"
+
+- **USSD Menus**: Complete flow implementation}
+
+- **Voice IVR**: Recording and transcription ready```
+
+- **Threat Analysis**: AI-powered risk assessment active
+
+- **Sensor Network**: IoT data processing operational### API Statistics
+
+- **Night Guard**: Automated monitoring system running
+
+- **Airtime Rewards**: 1-5 KES distribution working**Endpoint:** `GET /api/stats`
+
+- **Database Seeding**: Comprehensive test data available
 
 Get API usage statistics.
 
-**Response:**
-```json
-{
-  "success": true,
-  "stats": {
-    "totalRequests": 15420,
-    "requestsToday": 523,
-    "averageResponseTime": "145ms",
-    "endpoints": {
-      "/api/community/report": 8934,
-      "/api/rangers/reports": 3241,
-      "/api/sensors/data": 2156
-    },
-    "errorRate": 0.02,
-    "uptime": 99.8
-  }
-}
-```
+### 📊 Performance Metrics
 
-### Test SMS Integration
+From deployment logs showing successful operations:**Response:**
+
+- **Reports Created**: Multiple successful report submissions```json
+
+- **SMS Notifications**: Rangers alerted automatically{
+
+- **Threat Analysis**: Risk scores calculated (0.39-0.78 range)  "success": true,
+
+- **Airtime Distribution**: Callback system operational  "stats": {
+
+- **Database**: All operations completing successfully    "totalRequests": 15420,
+
+    "requestsToday": 523,
+
+---    "averageResponseTime": "145ms",
+
+    "endpoints": {
+
+## 🆘 Support      "/api/community/report": 8934,
+
+      "/api/rangers/reports": 3241,
+
+- **Live API**: https://wildguard-api-gubr.onrender.com      "/api/sensors/data": 2156
+
+- **Health Check**: https://wildguard-api-gubr.onrender.com/health      },
+
+- **Interactive Docs**: https://wildguard-api-gubr.onrender.com/api/docs    "errorRate": 0.02,
+
+- **SMS Sender ID**: AFTKNG    "uptime": 99.8
+
+- **GitHub**: AfricasTalkingHackathons/wildguard-api  }
+
+}
+
+### Example API Calls```
+
+```bash
+
+# Test API health### Test SMS Integration
+
+curl https://wildguard-api-gubr.onrender.com/health
 
 **Endpoint:** `POST /api/test-sms`
 
-Test Africa's Talking SMS integration.
+# Get API documentation
 
-**Request:**
-```json
-{
-  "phoneNumber": "+254712345678",
-  "message": "Test message from WildGuard API"
-}
-```
+curl https://wildguard-api-gubr.onrender.com/api/docsTest Africa's Talking SMS integration.
 
-**Response:**
-```json
-{
+
+
+# Submit test report (replace with valid data)**Request:**
+
+curl -X POST https://wildguard-api-gubr.onrender.com/api/community/report \```json
+
+  -H "Content-Type: application/json" \{
+
+  -d '{  "phoneNumber": "+254712345678",
+
+    "phoneNumber": "+254712345678",  "message": "Test message from WildGuard API"
+
+    "type": "wildlife_sighting",}
+
+    "description": "Elephants near waterhole",```
+
+    "latitude": -1.2921,
+
+    "longitude": 36.8219**Response:**
+
+  }'```json
+
+```{
+
   "success": true,
-  "message": "SMS sent successfully",
+
+For technical support or API access, contact the WildGuard development team.  "message": "SMS sent successfully",
   "africasTalking": {
     "messageId": "at-message-id",
     "status": "sent",
