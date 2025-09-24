@@ -3,6 +3,8 @@ import { Request, Response } from 'express'
 import ReportProcessingService from '../services/reportProcessing'
 import { ThreatAnalysisService } from '../services/threatAnalysis'
 import AfricasTalkingService from '../services/africasTalking'
+import { isDatabaseAvailable } from '../db'
+import { env } from '../env'
 
 /**
  * @swagger
@@ -58,11 +60,19 @@ export class ApiController {
    *                 - "Real-time Alerts"
    */
   static health(req: Request, res: Response) {
+    const isDbAvailable = isDatabaseAvailable()
+    const isAtAvailable = !!(env.AT_API_KEY && env.AT_USERNAME)
+    
     res.json({
       status: 'OK',
       service: 'WildGuard Conservation API',
       version: '1.0.0',
       timestamp: new Date().toISOString(),
+      environment: env.NODE_ENV,
+      services: {
+        database: isDbAvailable ? 'Connected' : 'Not configured',
+        africasTalking: isAtAvailable ? 'Connected' : 'Not configured',
+      },
       features: [
         'Community Reporting (SMS/USSD/Voice)',
         'Threat Analysis & Prediction',

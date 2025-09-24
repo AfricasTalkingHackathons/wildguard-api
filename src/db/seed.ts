@@ -487,7 +487,7 @@ async function seedDatabase() {
     👨‍💼 Admins: 1 system administrator
     📋 Reports: ${testReports.length} (4 verified, 2 pending)
     📡 IoT Sensors: ${sensorData.length} active devices
-    💰 Rewards: ${rewardRecords.length} airtime payments (${rewardRecords.reduce((sum, r) => sum + parseFloat(r.amount), 0)} KES total)
+    💰 Rewards: ${rewardRecords.length} airtime payments (${rewardRecords.reduce((sum: number, r: any) => sum + parseFloat(r.amount), 0)} KES total)
     🤖 AI Predictions: ${predictions.length} active threat assessments
     
     🚀 Ready for Africa's Talking integration testing!`)

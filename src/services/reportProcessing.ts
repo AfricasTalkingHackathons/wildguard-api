@@ -186,7 +186,7 @@ export class ReportProcessingService {
         .where(eq(users.role, 'ranger'))
         .limit(5)
 
-      const rangerPhones = rangers.map(r => r.phoneNumber)
+      const rangerPhones = rangers.map((r: any) => r.phoneNumber)
 
       if (rangerPhones.length > 0) {
         const locationMessage = `${message}\n\nLocation: ${lat.toFixed(6)}, ${lng.toFixed(6)}\nView: https://maps.google.com/maps?q=${lat},${lng}`

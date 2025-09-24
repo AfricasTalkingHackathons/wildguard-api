@@ -414,7 +414,7 @@ router.get('/status/:sensorId', async (req: Request, res: Response) => {
         )
       )
     
-    const threatDetections = todaysReadings.filter(reading => 
+    const threatDetections = todaysReadings.filter((reading: any) => 
       reading.threatLevel && reading.threatLevel !== 'none'
     )
     
@@ -439,10 +439,10 @@ router.get('/status/:sensorId', async (req: Request, res: Response) => {
         threatDetections: threatDetections.length,
         lastReading: recentData[0]?.recordedAt,
         averageConfidence: recentData.length > 0 
-          ? recentData.reduce((sum, d) => sum + (parseFloat(d.detectionConfidence || '0')), 0) / recentData.length
+          ? recentData.reduce((sum: number, d: any) => sum + (parseFloat(d.detectionConfidence || '0')), 0) / recentData.length
           : 0,
       },
-      recentData: recentData.map(data => ({
+      recentData: recentData.map((data: any) => ({
         id: data.id,
         dataType: data.dataType,
         threatLevel: data.threatLevel,
@@ -578,7 +578,7 @@ router.get('/network', async (req: Request, res: Response) => {
     const last24Hours = new Date(Date.now() - 24 * 60 * 60 * 1000)
     
     const sensorStats = await Promise.all(
-      allSensors.map(async (sensor) => {
+      allSensors.map(async (sensor: any) => {
         const recentData = await db
           .select()
           .from(sensorData)
@@ -589,7 +589,7 @@ router.get('/network', async (req: Request, res: Response) => {
             )
           )
         
-        const threats = recentData.filter(d => d.threatLevel && d.threatLevel !== 'none')
+        const threats = recentData.filter((d: any) => d.threatLevel && d.threatLevel !== 'none')
         
         return {
           id: sensor.id,
@@ -621,10 +621,10 @@ router.get('/network', async (req: Request, res: Response) => {
       sensorsWithThreats: sensorStats.filter(s => s.stats.threatsDetected > 0).length,
       totalThreatsLast24h: sensorStats.reduce((sum, s) => sum + s.stats.threatsDetected, 0),
       averageBatteryLevel: allSensors
-        .filter(s => s.batteryLevel !== null)
-        .reduce((sum, s) => sum + (s.batteryLevel || 0), 0) / 
-        allSensors.filter(s => s.batteryLevel !== null).length || 0,
-      sensorTypes: allSensors.reduce((types: any, sensor) => {
+        .filter((s: any) => s.batteryLevel !== null)
+        .reduce((sum: number, s: any) => sum + (s.batteryLevel || 0), 0) / 
+        allSensors.filter((s: any) => s.batteryLevel !== null).length || 0,
+      sensorTypes: allSensors.reduce((types: any, sensor: any) => {
         types[sensor.type] = (types[sensor.type] || 0) + 1
         return types
       }, {}),

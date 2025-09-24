@@ -2,17 +2,24 @@
 import AfricasTalking from 'africastalking'
 import { env } from '../env'
 
-// Initialize Africa's Talking with all services
-const africasTalking = AfricasTalking({
-  apiKey: env.AT_API_KEY,
-  username: env.AT_USERNAME,
-})
+// Initialize Africa's Talking with all services - only if credentials are available
+const africasTalking = env.AT_API_KEY && env.AT_USERNAME 
+  ? AfricasTalking({
+      apiKey: env.AT_API_KEY,
+      username: env.AT_USERNAME,
+    })
+  : null
 
 // Get all service modules with proper error handling
-const sms = africasTalking.SMS
-const voice = (africasTalking as any).VOICE // Optional service
-const airtime = (africasTalking as any).AIRTIME // Optional service
-const ussd = (africasTalking as any).USSD // Optional service
+const sms = africasTalking?.SMS || null
+const voice = africasTalking ? (africasTalking as any).VOICE : null // Optional service
+const airtime = africasTalking ? (africasTalking as any).AIRTIME : null // Optional service
+const ussd = africasTalking ? (africasTalking as any).USSD : null // Optional service
+
+// Helper function to check if Africa's Talking is available
+const isAfricasTalkingAvailable = (): boolean => {
+  return africasTalking !== null && env.AT_API_KEY !== undefined && env.AT_USERNAME !== undefined
+}
 
 export interface SMSMessage {
   to: string[]
@@ -51,6 +58,15 @@ export class AfricasTalkingService {
   // Send SMS notification
   static async sendSMS(options: SMSMessage): Promise<any> {
     try {
+      if (!isAfricasTalkingAvailable() || !sms) {
+        console.warn('Africa\'s Talking SMS service not available - SMS not sent')
+        return {
+          success: false,
+          message: 'SMS service not configured',
+          data: { recipients: options.to.map(to => ({ number: to, status: 'ServiceNotConfigured', cost: '0.00' })) }
+        }
+      }
+
       const result = await sms.send({
         to: options.to,
         message: options.message,
@@ -68,6 +84,15 @@ export class AfricasTalkingService {
   // Send airtime reward
   static async sendAirtime(options: AirtimeTopup): Promise<any> {
     try {
+      if (!isAfricasTalkingAvailable() || !airtime) {
+        console.warn('Africa\'s Talking Airtime service not available - airtime not sent')
+        return {
+          success: false,
+          message: 'Airtime service not configured',
+          data: { entries: [{ phoneNumber: options.phoneNumber, status: 'ServiceNotConfigured' }] }
+        }
+      }
+
       const recipients = [{
         phoneNumber: options.phoneNumber,
         amount: options.amount,
@@ -107,6 +132,15 @@ export class AfricasTalkingService {
   // Make voice calls with custom message
   static async makeVoiceCall(options: VoiceCall): Promise<any> {
     try {
+      if (!isAfricasTalkingAvailable() || !voice) {
+        console.warn('Africa\'s Talking Voice service not available - voice call not made')
+        return {
+          success: false,
+          message: 'Voice service not configured',
+          entries: options.phoneNumbers.map(phoneNumber => ({ phoneNumber, status: 'ServiceNotConfigured' }))
+        }
+      }
+
       const callOptions = {
         to: options.phoneNumbers,
         from: '+254711082200', // Default Africa's Talking voice number
