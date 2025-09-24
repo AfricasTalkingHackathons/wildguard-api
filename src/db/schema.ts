@@ -9,7 +9,7 @@ export const users = pgTable('users', {
   name: text('name'),
   role: text('role', { enum: ['community', 'ranger', 'admin', 'ngo'] }).notNull().default('community'),
   location: text('location'), // General area/village
-  trustScore: decimal('trust_score', { precision: 3, scale: 2 }).default('0.00'),
+  trustScore: decimal('trust_score', { precision: 3, scale: 2 }).default('0.50'), // 0.00 to 1.00
   totalReports: integer('total_reports').default(0),
   verifiedReports: integer('verified_reports').default(0),
   airtimeEarned: decimal('airtime_earned', { precision: 10, scale: 2 }).default('0.00'),

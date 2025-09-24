@@ -113,7 +113,7 @@ export class ReportProcessingService {
         id: newUserId,
         phoneNumber,
         role: 'community',
-        trustScore: '50.00', // Starting trust score
+        trustScore: '0.50', // Starting trust score (0.0-1.0 range)
       })
 
       user = await db
