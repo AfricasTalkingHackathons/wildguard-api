@@ -141,9 +141,11 @@ export class AfricasTalkingService {
         }
       }
 
+      // Use the correct Africa's Talking voice API format
       const callOptions = {
         to: options.phoneNumbers,
-        from: '+254711082200', // Default Africa's Talking voice number
+        // Don't specify 'from' - let Africa's Talking use the default number
+        // The 'from' field is not needed for outbound voice calls
       }
 
       const result = await voice.call(callOptions)
@@ -152,7 +154,17 @@ export class AfricasTalkingService {
       
     } catch (error) {
       console.error('Voice call failed:', error)
-      throw error
+      
+      // Provide fallback response for demo
+      return {
+        success: false,
+        message: 'Voice call service temporarily unavailable',
+        entries: options.phoneNumbers.map(phoneNumber => ({ 
+          phoneNumber, 
+          status: 'Failed',
+          errorMessage: 'Service temporarily unavailable'
+        }))
+      }
     }
   }
 

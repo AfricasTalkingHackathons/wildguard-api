@@ -10,6 +10,7 @@ import communityRoutes from './routes/community'
 import rangerRoutes from './routes/rangers'
 import sensorRoutes from './routes/sensors'
 import ApiController from './controllers/apiController'
+import AfricasTalkingService from './services/africasTalking'
 
 // Create Express application
 const app = express()
@@ -74,6 +75,112 @@ app.get('/api/stats', ApiController.stats)
 app.post('/api/test-sms', ApiController.testAT)
 app.post('/api/emergency-alert', ApiController.emergencyAlert)
 app.post('/api/sensor-data', ApiController.processSensorData)
+
+// Test endpoints for Africa's Talking services
+app.post('/api/test-services', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { phoneNumber, testType } = req.body
+
+    if (!phoneNumber) {
+      res.status(400).json({ error: 'phoneNumber required' })
+      return
+    }
+
+    const results: any = {}
+
+    if (!testType || testType === 'sms') {
+      // Test SMS
+      try {
+        const smsResult = await AfricasTalkingService.sendSMS({
+          to: [phoneNumber],
+          message: 'WildGuard SMS Test: Your SMS service is working correctly! 🌿'
+        })
+        results.sms = { success: true, result: smsResult }
+      } catch (error) {
+        results.sms = { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
+      }
+    }
+
+    if (!testType || testType === 'airtime') {
+      // Test Airtime (small amount)
+      try {
+        const airtimeResult = await AfricasTalkingService.sendAirtime({
+          phoneNumber: phoneNumber,
+          amount: 1, // 1 KES for testing
+          currencyCode: 'KES'
+        })
+        results.airtime = { success: true, result: airtimeResult }
+      } catch (error) {
+        results.airtime = { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
+      }
+    }
+
+    if (!testType || testType === 'voice') {
+      // Test Voice Call - Note: Voice requires proper callback URL setup
+      try {
+        // For testing, we'll simulate a successful voice call setup
+        // In production, ensure your callback URL is configured in Africa's Talking dashboard
+        const voiceResult = await AfricasTalkingService.makeVoiceCall({
+          phoneNumbers: [phoneNumber],
+          message: 'WildGuard voice test call'
+        })
+        
+        // If voice service is not properly configured, provide helpful message
+        if (!voiceResult.success) {
+          results.voice = { 
+            success: false, 
+            error: 'Voice service needs callback URL configuration in Africa\'s Talking dashboard',
+            note: 'Voice calls require proper webhook setup for production use'
+          }
+        } else {
+          results.voice = { success: true, result: voiceResult }
+        }
+      } catch (error) {
+        results.voice = { 
+          success: false, 
+          error: error instanceof Error ? error.message : 'Unknown error',
+          note: 'Voice calls may require additional Africa\'s Talking configuration'
+        }
+      }
+    }
+
+    res.json({
+      success: true,
+      phoneNumber,
+      testType: testType || 'all',
+      results,
+      message: 'Service tests completed'
+    })
+
+  } catch (error) {
+    console.error('Service test error:', error)
+    res.status(500).json({ error: 'Service test failed' })
+  }
+})
+
+// Voice callback endpoint for testing
+app.post('/api/voice-callback', async (req: Request, res: Response) => {
+  try {
+    console.log('Voice callback received:', req.body)
+    
+    const xmlResponse = await AfricasTalkingService.handleVoiceCallback(req.body)
+    
+    res.set('Content-Type', 'text/xml')
+    res.send(xmlResponse)
+  } catch (error) {
+    console.error('Voice callback error:', error)
+    
+    // Fallback XML response
+    const errorResponse = `<?xml version="1.0" encoding="UTF-8"?>
+    <Response>
+      <Say voice="woman">Sorry, there was a technical error. Please try calling again later.</Say>
+      <Hangup/>
+    </Response>`
+    
+    res.set('Content-Type', 'text/xml')
+    res.send(errorResponse)
+  }
+})
 
 // Community routes (SMS, USSD, Voice, Mobile App)
 app.use('/api/community', communityRoutes)
@@ -198,12 +305,18 @@ app.get('/', (req: Request, res: Response) => {
     endpoints: {
       health: '/health',
       stats: '/api/stats',
+      testing: {
+        sms: '/api/test-sms',
+        services: '/api/test-services',
+        voiceCallback: '/api/voice-callback',
+      },
       community: {
         ussd: '/api/community/ussd',
         sms: '/api/community/sms',
         voice: '/api/community/voice',
         reports: '/api/community/report',
         profile: '/api/community/profile/:phoneNumber',
+        airtimeCallback: '/api/community/airtime-callback',
       },
       rangers: {
         dashboard: '/api/rangers/dashboard',
