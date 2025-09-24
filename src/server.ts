@@ -15,10 +15,10 @@ const app = express()
 // Security middleware
 app.use(helmet())
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['https://wildguard.conservation'] // Replace with your domain
-    : true, // Allow all origins in development
+  origin: true, // Allow all origins for now (frontend development)
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept']
 }))
 
 // Rate limiting
