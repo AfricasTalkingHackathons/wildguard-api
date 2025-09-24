@@ -14,8 +14,38 @@ import ApiController from './controllers/apiController'
 // Create Express application
 const app = express()
 
-// Security middleware
-app.use(helmet())
+// Security middleware - Configure Helmet with CSP for Swagger UI
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      baseUri: ["'self'"],
+      fontSrc: ["'self'", "https:", "data:", "https://fonts.gstatic.com"],
+      formAction: ["'self'"],
+      frameAncestors: ["'self'"],
+      imgSrc: ["'self'", "data:", "https:", "blob:"],
+      objectSrc: ["'none'"],
+      scriptSrc: [
+        "'self'", 
+        "'unsafe-eval'", // Required for Swagger UI JavaScript execution
+        "'unsafe-inline'", // May be needed for some Swagger UI inline scripts
+        "https://unpkg.com", // CDN resources that Swagger UI might use
+      ],
+      scriptSrcAttr: ["'none'"],
+      styleSrc: [
+        "'self'", 
+        "https:", 
+        "'unsafe-inline'", // Required for Swagger UI CSS styling
+        "https://fonts.googleapis.com",
+        "https://unpkg.com"
+      ],
+      connectSrc: ["'self'", "https:", "wss:", "ws:"], // Allow API calls and WebSocket connections
+      upgradeInsecureRequests: [],
+    },
+  },
+  crossOriginEmbedderPolicy: false, // Disable COEP for better compatibility
+}))
+
 app.use(cors({
   origin: true, // Allow all origins for now (frontend development)
   credentials: true,
@@ -69,6 +99,21 @@ app.get('/api/ws', (req: Request, res: Response) => {
 // API documentation endpoint
 app.get('/api/docs', (req: Request, res: Response) => {
   res.redirect('/docs')
+})
+
+// Middleware to set permissive CSP for Swagger UI specifically
+app.use('/docs', (req: Request, res: Response, next: NextFunction) => {
+  res.setHeader('Content-Security-Policy', 
+    "default-src 'self'; " +
+    "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://unpkg.com; " +
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; " +
+    "font-src 'self' https://fonts.gstatic.com data:; " +
+    "img-src 'self' data: https: blob:; " +
+    "connect-src 'self' https: wss: ws:; " +
+    "frame-src 'none'; " +
+    "object-src 'none';"
+  )
+  next()
 })
 
 // Swagger UI setup
