@@ -18,6 +18,8 @@
     "db:migrate": "drizzle-kit push:pg",
     "db:studio": "drizzle-kit studio",
     "db:seed": "tsx src/db/seed.ts",
+    "jwt:test": "tsx scripts/test-jwt.ts",
+    "secrets:generate": "node scripts/generate-secrets.js",
     "prepare:production": "npm run build && npm run test:production",
     "deploy:check": "npm run lint && npm run build && npm run test:production",
     "health:check": "curl -f http://localhost:3000/health || exit 1"
